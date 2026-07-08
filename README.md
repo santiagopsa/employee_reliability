@@ -1,38 +1,43 @@
-# IRRT v1.0 — App web (PeakU × Vilü)
+# IRRT v1.1 — App web (PeakU × Vilü)
 
-Encuesta estandarizada anti-faking + panel de resultados por empresa. Node.js puro, **cero dependencias** (no requiere `npm install`).
+Encuesta estandarizada anti-faking + panel de resultados por empresa.
+
+## Novedades v1.1
+
+- **Login por correo**: el usuario de cada empresa es su email (la clave se genera al registrar).
+- **Postgres**: con la variable `DATABASE_URL` los datos sobreviven deploys y reinicios. Sin ella (local), usa `data/db.json`.
+- **Plan de prueba**: cada empresa ve el resultado completo de sus primeras **10** evaluaciones; las siguientes quedan registradas pero bloqueadas (🔒) con CTA para activar el plan. Límite configurable en `CONFIG.LIMITE_GRATIS` (server.js). El correo comercial del CTA está en `const CONTACTO` (portal.html).
+- **Metodología reforzada** en `/metodologia`: probabilidades del estudio, ciencia de cada formato de pregunta y referencias académicas. Sin ítems, claves, pesos ni umbrales.
 
 ## Probar en tu computador
 
 ```bash
 cd irrt-app
-node server.js
+node server.js        # no necesita npm install en local (pg solo se usa si hay DATABASE_URL)
 ```
 
-Abre `http://localhost:3000`:
+Abre `http://localhost:3000` → botón "Crear empresa demo" (5 candidatos de ejemplo, usuario demo+xxxx@peaku.co).
 
-1. **Probar rápido:** botón "Crear empresa demo" → te da ID y clave, con 5 candidatos de ejemplo (verde, rojo, amarillo-V, amarillo-P y no-interpretable).
-2. **Flujo real:** registra una empresa → copia el enlace de encuesta → ábrelo en el celular (misma red: usa la IP del PC, ej. `http://192.168.1.10:3000/encuesta/XXXX`) → responde → mira el panel.
+## Desplegar en Render (con base de datos)
 
-## Desplegar en Render
+Opción A — Blueprint (recomendada): sube el repo → en Render **New → Blueprint** → detecta `render.yaml` y crea el web service **y** el Postgres gratuito ya conectados.
 
-1. Sube la carpeta `irrt-app` a un repo de GitHub.
-2. En Render: **New → Web Service** → conecta el repo.
-3. Runtime: Node · Build Command: *(vacío)* · Start Command: `node server.js`.
-4. Listo: la URL pública sirve portal y encuesta.
+Opción B — manual: crea un Postgres (New → Postgres, plan free) → crea el Web Service (Build: `npm install` · Start: `node server.js`) → en Environment añade `DATABASE_URL` con la *Internal Connection String* del Postgres.
 
-**Importante (persistencia):** el plan gratuito de Render tiene disco efímero: `data/db.json` se borra en cada deploy/reinicio. Para producción real: agrega un Persistent Disk en Render (montado en `/data` y define la variable `DATA_DIR=/data`), o migra el módulo de persistencia a Postgres (las funciones `loadDB/saveDB` en `server.js` son el único punto a tocar).
+El log de arranque dice qué almacenamiento está usando: `Almacenamiento: Postgres` o `archivo local`.
+
+Nota: el Postgres gratuito de Render expira a los ~30 días (te avisan por email); para continuidad, plan Basic o migrar los datos.
 
 ## Seguridad del instrumento
 
-- La **clave de puntuación, pesos y umbrales viven solo en `server.js`**: el navegador del candidato nunca los recibe.
-- Al candidato **nunca** se le muestra su puntaje.
-- La clave de la empresa se guarda hasheada (scrypt).
-- Umbrales calibrables en `CONFIG` (parte superior de `server.js`), documentados en el manual IRRT v1.0 (sección 7 y 10).
+- Claves de calificación, pesos y umbrales viven SOLO en `server.js`; el navegador nunca los recibe.
+- Al candidato nunca se le muestra su puntaje.
+- Clave de empresa hasheada (scrypt). Emails únicos.
+- Umbrales calibrables en `CONFIG` (documentados en el manual IRRT, secciones 7 y 10).
 
 ## Pendientes para producción seria
 
-- HTTPS lo da Render automáticamente.
-- Rotar variantes del Bloque B cada 6–12 meses (M8): editar `CATALOGO.B` y `CLAVE_B`.
-- Calibración de umbrales con outcomes reales (no-show, asistencia 90 días) según el plan de validación del manual.
+- Rotar variantes del Bloque B cada 6–12 meses (M8): `CATALOGO.B` + `CLAVE_B`.
+- Calibración de umbrales con outcomes reales (no-show, asistencia 90 días).
 - Política de retención de datos (Ley 1581): borrar aplicaciones al cerrar cada proceso.
+- Recuperación de clave (hoy no existe: anótala al registrar).

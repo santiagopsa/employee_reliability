@@ -24,14 +24,20 @@
   .aviso{background:#FFF7DF;border-radius:10px;padding:12px;font-size:13px;margin:10px 0}
   .credencial{background:#E8F5F0;border-radius:10px;padding:14px;font-size:14px;margin:10px 0;word-break:break-all}
   .credencial b{font-family:monospace;font-size:15px}
+  .plan{display:flex;align-items:center;gap:14px;background:#E5F8FF;border-radius:12px;padding:12px 16px;margin-top:12px;font-size:13.5px}
+  .plan .barra{flex:1;height:10px;background:#fff;border-radius:99px;overflow:hidden}
+  .plan .barra i{display:block;height:100%;background:var(--azultx)}
+  .plan.lleno{background:#FFF7DF}
   table{width:100%;border-collapse:collapse;font-size:13.5px}
   th{text-align:left;color:var(--gris);font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;border-bottom:2px solid #e3e8ec}
   td{padding:10px;border-bottom:1px solid #eef1f3;vertical-align:top}
   tr.fila:hover{background:#F7FBFD;cursor:pointer}
+  tr.bloq td{opacity:.65}
   .sem{display:inline-block;padding:4px 10px;border-radius:99px;font-size:11.5px;font-weight:800;color:#fff;white-space:nowrap}
   .s-VERDE{background:var(--verde)} .s-VERDE-OBSERVACIÓN{background:#6BA84F}
   .s-AMARILLO-P{background:var(--amar)} .s-AMARILLO-V{background:#D98E04}
   .s-ROJO{background:var(--coral)} .s-NO-INTERPRETABLE{background:#8A8F94}
+  .s-BLOQUEADO{background:#8A8F94}
   .score{font-weight:800;font-size:16px}
   .modal{position:fixed;inset:0;background:rgba(20,30,40,.5);display:none;align-items:flex-start;justify-content:center;padding:30px 14px;overflow:auto;z-index:50}
   .modal.on{display:flex}
@@ -65,13 +71,15 @@
   .linkbox{display:flex;gap:8px}
   .linkbox input{margin:0}
   .oculto{display:none}
+  .candado{text-align:center;padding:26px 10px}
+  .candado .ico{font-size:44px}
   footer{color:#9aa1a7;font-size:11.5px;text-align:center;margin-top:30px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="marca">PeakU × Vilü<small>IRRT v1.0 · Instrumento de Riesgo de Rotación Temprana</small></div>
+    <div class="marca">PeakU × Vilü<small>IRRT v1.1 · Instrumento de Riesgo de Rotación Temprana</small></div>
     <button class="btn-link oculto" id="btnSalir">Cerrar sesión</button>
   </header>
 
@@ -79,20 +87,20 @@
   <div id="vPublica">
     <div class="card">
       <h1>Filtra la rotación antes de contratar</h1>
-      <p class="sub">Registra tu empresa, comparte el enlace de la encuesta con tus candidatos (12 minutos desde su celular) y ve aquí su semáforo de riesgo: verde, amarillo-precarizado, amarillo-victimizado o rojo. La puntuación se calcula en el servidor con el modelo IRRT v1.0 — el candidato nunca ve la clave.</p>
-      <p style="margin-top:10px"><a href="/metodologia" style="color:var(--azultx);font-weight:700;font-size:13.5px;text-decoration:none">📄 Conoce la metodología y la evidencia detrás del IRRT v1.0 →</a></p>
+      <p class="sub">Registra tu empresa, comparte el enlace de la encuesta con tus candidatos (12 minutos desde su celular) y ve aquí su semáforo de riesgo: verde, amarillo-precarizado, amarillo-victimizado o rojo. La puntuación se calcula en el servidor con el modelo IRRT — el candidato nunca ve la clave. <b>Prueba gratuita: 10 evaluaciones con resultado completo.</b></p>
+      <p style="margin-top:10px"><a href="/metodologia" style="color:var(--azultx);font-weight:700;font-size:13.5px;text-decoration:none">📄 Conoce la metodología y la evidencia detrás del IRRT →</a></p>
     </div>
     <div class="grid2">
       <div class="card">
         <h2>Registrar mi empresa</h2>
         <input id="regNombre" placeholder="Nombre de la empresa">
-        <input id="regEmail" placeholder="Email de contacto">
+        <input id="regEmail" placeholder="Correo de la empresa (será tu usuario)">
         <button class="btn-pri" id="btnReg">Crear cuenta</button>
         <div id="regOut"></div>
       </div>
       <div class="card">
         <h2>Ya tengo cuenta</h2>
-        <input id="logId" placeholder="ID de empresa">
+        <input id="logEmail" placeholder="Correo de la empresa">
         <input id="logClave" placeholder="Clave de acceso">
         <button class="btn-verde" id="btnLog">Entrar al panel</button>
         <div id="logOut"></div>
@@ -111,6 +119,7 @@
         <input id="panLink" readonly>
         <button class="btn-pri" id="btnCopiar">Copiar</button>
       </div>
+      <div class="plan" id="panPlan"></div>
     </div>
     <div class="card">
       <div class="toolbar">
@@ -134,11 +143,11 @@
     </div>
     <div class="card" style="font-size:12.5px;color:var(--gris)">
       <b>Cómo leer el semáforo.</b> VERDE: avanza directo. VERDE-OBSERVACIÓN: avanza con verificación ligera de referencias. AMARILLO-P (precarizado): historial inestable por causas estructurales — verifica referencias y contrata con onboarding estándar; no lo castigues por el historial. AMARILLO-V (auto-victimizado): patrón de atribución externa — haz la entrevista dirigida de agencia antes de decidir. ROJO: solo avanza con doble confirmación (entrevista estructurada + referencias limpias). NO INTERPRETABLE: la persona respondió para la galería o sin leer — repite en sitio; no cuenta como rojo. <b>Ningún candidato debe rechazarse por el puntaje solo: la decisión final es siempre humana.</b>
-      <p style="margin-top:10px"><a href="/metodologia" target="_blank" style="color:var(--azultx);font-weight:700;text-decoration:none">📄 ¿En qué se basa esta prueba? Metodología y evidencia del IRRT v1.0 →</a></p>
+      <p style="margin-top:10px"><a href="/metodologia" target="_blank" style="color:var(--azultx);font-weight:700;text-decoration:none">📄 ¿En qué se basa esta prueba? Metodología y evidencia del IRRT →</a></p>
     </div>
   </div>
 
-  <footer>IRRT v1.0 · Estudio “¿Por qué no llegan?” (n=163, Colombia 2026) · Umbrales provisionales: requieren calibración con resultados reales · Los datos del candidato se tratan bajo Ley 1581 de 2012</footer>
+  <footer>IRRT v1.1 · Estudio “¿Por qué no llegan?” (n=163, Colombia 2026) · Umbrales provisionales: requieren calibración con resultados reales · Los datos del candidato se tratan bajo Ley 1581 de 2012</footer>
 </div>
 
 <!-- ========== MODAL DETALLE ========== -->
@@ -148,19 +157,7 @@
       <div><h2 id="mNombre"></h2><p class="sub" id="mMeta"></p></div>
       <button class="btn-sec" id="mCerrar">✕</button>
     </div>
-    <div style="display:flex;gap:14px;align-items:center;margin:14px 0 4px">
-      <div class="score" style="font-size:34px" id="mScore"></div>
-      <span class="sem" id="mSem"></span>
-    </div>
-    <p class="sub" id="mScoreNota"></p>
-    <div id="mResumen" class="resumen"></div>
-    <div class="pasos" id="mPasosBox"><h4>Qué hacer ahora y por qué</h4><div id="mPasos"></div></div>
-    <div id="mFlags"></div>
-    <h3 class="msec">Las 4 señales que medimos</h3>
-    <p class="sub" style="margin-bottom:4px">Cada una va de 0 (sin riesgo) a 100 (riesgo alto). El puntaje total las combina.</p>
-    <div id="mComps"></div>
-    <h3 class="msec">Detalles que explican el resultado</h3>
-    <div id="mDetalle"></div>
+    <div id="mCuerpo"></div>
   </div>
 </div>
 
@@ -168,7 +165,8 @@
 (function(){
 'use strict';
 const $=s=>document.querySelector(s);
-let sesion=null, datos=[];
+const CONTACTO='hola@peaku.co'; // ← correo comercial para activar plan completo (cámbialo aquí)
+let sesion=null, datos=[], plan=null;
 
 function api(ruta, opts={}){
   opts.headers=Object.assign({'Content-Type':'application/json'}, opts.headers||{});
@@ -181,21 +179,21 @@ $('#btnReg').onclick=()=>{
   api('/api/empresas',{method:'POST',body:JSON.stringify({nombre:$('#regNombre').value,email:$('#regEmail').value})})
   .then(d=>{
     $('#regOut').innerHTML = d.error ? '<div class="aviso">'+d.error+'</div>'
-      : '<div class="credencial">✅ Empresa creada.<br>ID: <b>'+d.empresaId+'</b><br>Clave: <b>'+d.clave+'</b><div class="aviso" style="margin:8px 0 0">Guarda estos datos: la clave solo se muestra una vez.</div></div>';
-    if(!d.error){ $('#logId').value=d.empresaId; $('#logClave').value=d.clave; }
+      : '<div class="credencial">✅ Empresa creada.<br>Usuario (tu correo): <b>'+d.email+'</b><br>Clave: <b>'+d.clave+'</b><div class="aviso" style="margin:8px 0 0">Guarda la clave: solo se muestra una vez. Incluye 10 evaluaciones gratis con resultado completo.</div></div>';
+    if(!d.error){ $('#logEmail').value=d.email; $('#logClave').value=d.clave; }
   });
 };
 $('#btnDemo').onclick=()=>{
   api('/api/demo',{method:'POST',body:JSON.stringify({})}).then(d=>{
-    $('#demoOut').innerHTML='<div class="credencial">🧪 Demo lista.<br>ID: <b>'+d.empresaId+'</b><br>Clave: <b>'+d.clave+'</b></div>';
-    $('#logId').value=d.empresaId; $('#logClave').value=d.clave;
+    $('#demoOut').innerHTML='<div class="credencial">🧪 Demo lista.<br>Usuario: <b>'+d.email+'</b><br>Clave: <b>'+d.clave+'</b></div>';
+    $('#logEmail').value=d.email; $('#logClave').value=d.clave;
   });
 };
 $('#btnLog').onclick=()=>{
-  const empresaId=$('#logId').value.trim(), clave=$('#logClave').value.trim();
-  api('/api/login',{method:'POST',body:JSON.stringify({empresaId,clave})}).then(d=>{
+  const email=$('#logEmail').value.trim(), clave=$('#logClave').value.trim();
+  api('/api/login',{method:'POST',body:JSON.stringify({email,clave})}).then(d=>{
     if(d.error){ $('#logOut').innerHTML='<div class="aviso">'+d.error+'</div>'; return; }
-    sesion={empresaId,clave,nombre:d.nombre};
+    sesion={empresaId:d.empresaId,clave,nombre:d.nombre,email:d.email};
     sessionStorage.setItem('irrt', JSON.stringify(sesion));
     abrirPanel();
   });
@@ -212,22 +210,41 @@ function abrirPanel(){
 function cargar(){
   api('/api/resultados').then(d=>{
     if(d.error){ alert(d.error); return; }
-    datos=d.resultados; pintar();
+    datos=d.resultados; plan=d.plan; pintar();
   });
 }
+function pintarPlan(){
+  if(!plan) return;
+  const pct=Math.min(100, plan.usadas/plan.limite*100);
+  const lleno = plan.usadas>=plan.limite;
+  const el=$('#panPlan');
+  el.className='plan'+(lleno?' lleno':'');
+  el.innerHTML = `<span><b>Prueba gratuita:</b> ${plan.usadas} de ${plan.limite} evaluaciones con resultado</span>
+    <div class="barra"><i style="width:${pct}%"></i></div>
+    ${plan.bloqueadas>0?`<span><b>${plan.bloqueadas}</b> bloqueada${plan.bloqueadas>1?'s':''} 🔒</span>`:''}
+    ${lleno?`<a href="mailto:${CONTACTO}?subject=Activar plan IRRT" style="color:var(--azultx);font-weight:700;text-decoration:none;white-space:nowrap">Activar plan completo →</a>`:''}`;
+}
 function pintar(){
+  pintarPlan();
   const f=$('#fSem').value;
-  const lista=datos.filter(a=>!f||a.resultado.semaforo===f);
+  const lista=datos.filter(a=>a.bloqueado ? !f : (!f||a.resultado.semaforo===f));
   $('#panTotal').textContent=datos.length;
   $('#panVacio').style.display=lista.length?'none':'block';
-  $('#panTabla').innerHTML=lista.map((a,i)=>`
-    <tr class="fila" data-i="${datos.indexOf(a)}">
+  $('#panTabla').innerHTML=lista.map(a=>{
+    const i=datos.indexOf(a);
+    if(a.bloqueado) return `<tr class="fila bloq" data-i="${i}">
+      <td>${a.fecha.slice(0,10)}</td>
+      <td><b>${esc(a.candidato.nombre)}</b><br><span class="sub">${esc(a.candidato.documento)}</span></td>
+      <td>${esc(a.candidato.vacante||'—')}</td>
+      <td class="score">🔒</td>
+      <td><span class="sem s-BLOQUEADO">🔒 BLOQUEADO</span></td></tr>`;
+    return `<tr class="fila" data-i="${i}">
       <td>${a.fecha.slice(0,10)}</td>
       <td><b>${esc(a.candidato.nombre)}</b><br><span class="sub">${esc(a.candidato.documento)}</span></td>
       <td>${esc(a.candidato.vacante||'—')}</td>
       <td class="score">${a.resultado.indiceRojo}</td>
-      <td><span class="sem s-${a.resultado.semaforo.replace(/ /g,'-')}">${a.resultado.semaforo}</span></td>
-    </tr>`).join('');
+      <td><span class="sem s-${a.resultado.semaforo.replace(/ /g,'-')}">${a.resultado.semaforo}</span></td></tr>`;
+  }).join('');
   document.querySelectorAll('tr.fila').forEach(tr=>tr.onclick=()=>abrirModal(datos[+tr.dataset.i]));
 }
 $('#fSem').onchange=pintar;
@@ -236,7 +253,7 @@ $('#btnCopiar').onclick=()=>{ navigator.clipboard.writeText($('#panLink').value)
 
 $('#btnCSV').onclick=()=>{
   const filas=[['fecha','nombre','documento','vacante','indiceRojo','semaforo','compB','compA','compC','compE','dScore','driverPuente','interpretable','flags','accion']];
-  datos.forEach(a=>{
+  datos.filter(a=>!a.bloqueado).forEach(a=>{
     const r=a.resultado;
     filas.push([a.fecha, a.candidato.nombre, a.candidato.documento, a.candidato.vacante||'', r.indiceRojo, r.semaforo,
       r.componentes.B, r.componentes.A, r.componentes.C, r.componentes.E, r.detalle.dScore, r.detalle.driverPuente,
@@ -280,24 +297,30 @@ function flagAmigable(f){
 
 /* ---------- modal ---------- */
 function abrirModal(a){
-  const r=a.resultado, d=r.detalle;
   $('#mNombre').textContent=a.candidato.nombre;
   $('#mMeta').textContent=(a.candidato.vacante||'Sin vacante')+' · doc '+a.candidato.documento+' · '+a.fecha.slice(0,16).replace('T',' ');
+  if(a.bloqueado){
+    $('#mCuerpo').innerHTML=`<div class="candado"><div class="ico">🔒</div>
+      <h2 style="margin:10px 0 6px">Resultado bloqueado</h2>
+      <p class="sub" style="max-width:420px;margin:0 auto 16px">Este candidato ya respondió la encuesta y su resultado está calculado, pero tu plan de prueba (${plan?plan.limite:10} evaluaciones con resultado) llegó al límite. Al activar el plan completo se desbloquean todos los resultados pendientes al instante.</p>
+      <a href="mailto:${CONTACTO}?subject=Activar plan IRRT — ${encodeURIComponent(sesion?sesion.nombre:'')}" style="display:inline-block;background:var(--azul);color:#fff;font-weight:700;padding:12px 22px;border-radius:10px;text-decoration:none">Activar plan completo</a></div>`;
+    $('#modal').classList.add('on'); return;
+  }
+  const r=a.resultado, d=r.detalle;
   const noInterp = r.semaforo==='NO INTERPRETABLE';
-  $('#mScore').textContent=r.indiceRojo;
-  $('#mScore').className='score'+(noInterp?' gris':'');
-  $('#mScore').style.fontSize='34px';
-  $('#mScoreNota').textContent = noInterp
-    ? 'Puntaje anulado: las alertas de abajo indican que las respuestas no son confiables.'
-    : 'Puntaje de riesgo de rotación: 0 = sin señales · 100 = máximo riesgo. Se calcula combinando las 4 señales de abajo.';
-  const sem=$('#mSem'); sem.textContent=r.semaforo; sem.className='sem s-'+r.semaforo.replace(/ /g,'-');
   const it=INTERP[r.semaforo]||INTERP['VERDE'];
-  const res=$('#mResumen'); res.className='resumen '+it.clase; res.innerHTML=it.resumen;
-  $('#mPasos').innerHTML=it.pasos.map((p,i)=>`<div class="paso"><div class="n">${i+1}</div><div><b>${p[0]}.</b> <span class="sub">${p[1]}</span></div></div>`).join('');
-  $('#mFlags').innerHTML=(r.flags||[]).map(f=>{ const [t,e]=flagAmigable(f); return `<div class="flag"><b>⚑ ${t}.</b> ${e}</div>`; }).join('');
-  $('#mComps').innerHTML=['B','A','C','E'].map(k=>{
-    const v=r.componentes[k], [ntxt,ncls]=nivel(v), inf=COMPS_INFO[k];
-    return `<div class="comp"><div class="fila1"><b>${inf.nombre}</b><span class="nivel ${ncls}">${ntxt} · ${v}/100</span></div>
+  let html=`<div style="display:flex;gap:14px;align-items:center;margin:14px 0 4px">
+      <div class="score${noInterp?' gris':''}" style="font-size:34px">${r.indiceRojo}</div>
+      <span class="sem s-${r.semaforo.replace(/ /g,'-')}">${r.semaforo}</span></div>
+    <p class="sub">${noInterp?'Puntaje anulado: las alertas de abajo indican que las respuestas no son confiables.':'Puntaje de riesgo de rotación: 0 = sin señales · 100 = máximo riesgo. Se calcula combinando las 4 señales de abajo.'}</p>
+    <div class="resumen ${it.clase}">${it.resumen}</div>
+    <div class="pasos"><h4>Qué hacer ahora y por qué</h4>${it.pasos.map((p,i)=>`<div class="paso"><div class="n">${i+1}</div><div><b>${p[0]}.</b> <span class="sub">${p[1]}</span></div></div>`).join('')}</div>
+    ${(r.flags||[]).map(f=>{ const [t,e]=flagAmigable(f); return `<div class="flag"><b>⚑ ${t}.</b> ${e}</div>`; }).join('')}
+    <h3 class="msec">Las 4 señales que medimos</h3>
+    <p class="sub" style="margin-bottom:4px">Cada una va de 0 (sin riesgo) a 100 (riesgo alto). El puntaje total las combina.</p>`;
+  html+=['B','A','C','E'].map(k=>{
+    const v=r.componentes[k], nv=nivel(v), inf=COMPS_INFO[k];
+    return `<div class="comp"><div class="fila1"><b>${inf.nombre}</b><span class="nivel ${nv[1]}">${nv[0]} · ${v}/100</span></div>
       <div class="desc">${inf.desc}</div><div class="compbar"><i style="width:${v}%"></i></div></div>`;
   }).join('');
   const detalles=[
@@ -309,7 +332,8 @@ function abrirModal(a){
     ['Transporte y logística', d.friccionLogistica==='Normal'?'Sin problema':'Atención', d.friccionLogistica==='Normal'?'Distancia y plan B de transporte razonables.':'Vive a más de 90 minutos o no tiene plan B de transporte. No es una falla del candidato: considera apoyo de ruta o turno compatible, porque las faltas logísticas son de las más comunes.'],
     ['Banderas', (r.banderas.amarilloP?'Amarilla-P (precarizado) ':'')+(r.banderas.amarilloV?'Amarilla-V (victimización)':'')||'Ninguna', 'Amarilla-P = historial inestable por causas externas: verificar, no castigar. Amarilla-V = patrón de culpar afuera: entrevistar antes de decidir. Ninguna = sin patrones especiales.']
   ];
-  $('#mDetalle').innerHTML=detalles.map(x=>`<div class="detrow"><div class="fila1"><span>${x[0]}</span><b>${x[1]}</b></div><div class="desc">${x[2]}</div></div>`).join('');
+  html+=`<h3 class="msec">Detalles que explican el resultado</h3>`+detalles.map(x=>`<div class="detrow"><div class="fila1"><span>${x[0]}</span><b>${x[1]}</b></div><div class="desc">${x[2]}</div></div>`).join('');
+  $('#mCuerpo').innerHTML=html;
   $('#modal').classList.add('on');
 }
 $('#mCerrar').onclick=()=>$('#modal').classList.remove('on');
@@ -319,7 +343,7 @@ function esc(s){ return String(s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt
 
 /* ---------- restaurar sesión ---------- */
 const guardada=sessionStorage.getItem('irrt');
-if(guardada){ sesion=JSON.parse(guardada); api('/api/login',{method:'POST',body:JSON.stringify(sesion)}).then(d=>{ if(!d.error) abrirPanel(); else sessionStorage.removeItem('irrt'); }); }
+if(guardada){ sesion=JSON.parse(guardada); api('/api/login',{method:'POST',body:JSON.stringify({email:sesion.email,clave:sesion.clave})}).then(d=>{ if(!d.error) abrirPanel(); else sessionStorage.removeItem('irrt'); }); }
 })();
 </script>
 </body>

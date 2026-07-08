@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>IRRT v1.0 · Metodología y evidencia — PeakU × Vilü</title>
+<title>IRRT · Metodología y evidencia — PeakU × Vilü</title>
 <style>
   :root{--azul:#00C3FF;--azultx:#0092C8;--azulosc:#006E96;--verde:#1D976C;--gris:#565656;--negro:#2b2b2b;--fondo:#F4F6F8;--coral:#C0392B;}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -32,6 +32,9 @@
   .tag{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:800;color:#fff;margin-right:6px}
   .t-verde{background:var(--verde)} .t-amar{background:#B8860B} .t-rojo{background:var(--coral)}
   .propiedad{background:#FFF7DF;border-radius:12px;padding:14px 16px;font-size:13px;margin:14px 0}
+  .prob{display:flex;gap:14px;align-items:flex-start;background:#F7FBFD;border-radius:12px;padding:14px;margin:10px 0}
+  .prob b.num{font-size:24px;color:var(--azulosc);white-space:nowrap}
+  .refs{font-size:12px;color:var(--gris);line-height:1.7}
   footer{color:#9aa1a7;font-size:11.5px;text-align:center;margin-top:26px;line-height:1.6}
 </style>
 </head>
@@ -43,9 +46,9 @@
   </header>
 
   <div class="hero">
-    <h1>IRRT v1.0 — Metodología y evidencia</h1>
+    <h1>IRRT — Metodología y evidencia</h1>
     <p class="sub">Instrumento de Riesgo de Rotación Temprana · Documento técnico de respaldo para empresas usuarias</p>
-    <p style="margin-top:12px">El IRRT no es un cuestionario improvisado: es un instrumento de tamizaje construido sobre una investigación propia con trabajadores del mercado objetivo, diseñado con técnicas estándar de la psicometría de selección de personal y sometido a un plan de calibración continua. Esta página resume la evidencia y el método para que sepas exactamente qué estás usando cuando evalúas un candidato.</p>
+    <p style="margin-top:12px">El IRRT no es un cuestionario improvisado: es un instrumento de tamizaje construido sobre una investigación propia con trabajadores del mercado objetivo, formulado con las técnicas de la psicometría de selección que acumulan décadas de evidencia meta-analítica, y sometido a un plan de calibración continua contra resultados reales de contratación. Esta página presenta la evidencia completa para que sepas exactamente qué estás usando cuando evalúas un candidato.</p>
   </div>
 
   <div class="card">
@@ -56,7 +59,7 @@
 
   <div class="card">
     <h2>2 · La investigación de base</h2>
-    <p>En 2026 realizamos el estudio <b>“¿Por qué no llegan?”</b>: encuesta estructurada de 34 preguntas (cerradas, dilemas situacionales y relato abierto) a <b>163 trabajadores colombianos</b> del mercado objetivo del instrumento — mayoría entre salario mínimo y 2 SMLV, 53% en búsqueda activa de empleo, 75% con personas a cargo. Cada respuesta abierta fue codificada manualmente por temas.</p>
+    <p>En 2026 realizamos el estudio <b>“¿Por qué no llegan?”</b>: encuesta estructurada de 34 preguntas (cerradas, dilemas situacionales y relato abierto) a <b>163 trabajadores colombianos</b> del mercado objetivo del instrumento — mayoría entre salario mínimo y 2 SMLV, 53% en búsqueda activa de empleo, 75% con personas a cargo. Cada respuesta abierta fue codificada manualmente por temas por dos vías independientes (cuantitativa y cualitativa).</p>
     <div class="statgrid">
       <div class="stat"><b>163</b><span>trabajadores encuestados, análisis cuantitativo + cualitativo</span></div>
       <div class="stat"><b>31%</b><span>admite tardanzas o faltas en los últimos 6 meses (autorreporte: el piso, no el techo)</span></div>
@@ -65,65 +68,105 @@
       <div class="stat"><b>27%</b><span>de las salidas de empleo NO fueron decisión del trabajador (fin de contrato, cierres)</span></div>
       <div class="stat"><b>29%</b><span>tuvo 3 o más empleos en los últimos 3 años</span></div>
     </div>
-    <h3>Las señales se confirman entre sí (significancia estadística)</h3>
-    <ul>
-      <li>Quien admite faltas es <b>4 veces más propenso</b> a declarar que mentiría para ausentarse (27% vs 7%, p=0.001).</li>
-      <li>Quien tuvo 3+ empleos en 3 años <b>duplica</b> la disposición a renunciar rápido (53% vs 25%, p=0.001).</li>
-      <li>Entre quienes más rotan, el <b>25% evade el conflicto</b> (“lo dejo pasar”) contra 1.5% de los estables — quien no discute, desaparece.</li>
-      <li>Sin personas a cargo, las faltas admitidas <b>se duplican</b> (45% vs 22%, p=0.05).</li>
-    </ul>
     <div class="cita">“Desde la primera entrevista sabía que me iba a ir pronto… era un escampadero.” — participante del estudio, 18-25 años. La rotación premeditada existe, se puede medir, y es distinta de la mala suerte laboral.</div>
   </div>
 
   <div class="card">
-    <h2>3 · Por qué una encuesta común no sirve (y qué hicimos al respecto)</h2>
-    <p>En el propio estudio comparamos formatos de pregunta con el mismo grupo. Las preguntas directas colapsan: la gran mayoría elige la respuesta “de entrevista”, sin importar su conducta real.</p>
+    <h2>3 · ¿Y si estas diferencias fueran azar? Las probabilidades dicen que no</h2>
+    <p>Cada asociación central del modelo fue sometida a test de independencia (chi-cuadrado con corrección de Yates). El valor p indica la probabilidad de observar una diferencia así de grande si en realidad no existiera relación. Los estándares científicos aceptan p&lt;0.05; nuestras asociaciones núcleo están muy por debajo.</p>
+    <div class="prob"><b class="num">3.9×</b><div><b>Quien admite faltas es casi 4 veces más propenso a declarar que mentiría para ausentarse</b> (27% vs 7%). p=0.001: la probabilidad de que esto sea azar es de 1 en 1.000.</div></div>
+    <div class="prob"><b class="num">2.1×</b><div><b>Quien tuvo 3+ empleos en 3 años duplica la disposición a renunciar rápido</b> (53% vs 25%). p=0.001: 1 en 1.000 de ser azar.</div></div>
+    <div class="prob"><b class="num">17×</b><div><b>Entre quienes más rotan, el 25% evade el conflicto (“lo dejo pasar”) contra el 1.5% de los estables.</b> La evasión del desacuerdo precede a la fuga silenciosa: quien no discute, desaparece.</div></div>
+    <div class="prob"><b class="num">2.0×</b><div><b>Sin personas a cargo, las faltas admitidas se duplican</b> (45% vs 22%, p=0.05). Las responsabilidades familiares operan como ancla de asistencia — por eso el modelo las usa como moderador, nunca como criterio de exclusión.</div></div>
+    <div class="prob"><b class="num">3.1×</b><div><b>Los más jóvenes (18-25) triplican la disposición a mentir para faltar frente a los mayores de 34</b> (28% vs 9%, p=0.047). El modelo no castiga la edad: mide la conducta que la acompaña.</div></div>
+    <p class="sub">Estas asociaciones cruzadas son la base del índice acumulativo: ninguna señal aislada decide nada, pero la probabilidad de que un candidato acumule 3+ señales por azar es baja (11% de la población base) y ese grupo concentra las conductas que las empresas reportan como pérdida.</p>
+  </div>
+
+  <div class="card">
+    <h2>4 · Por qué una encuesta común no sirve (y cómo lo demostramos)</h2>
+    <p>En el propio estudio comparamos formatos de pregunta con el mismo grupo de personas. El resultado es contundente: las preguntas directas colapsan por deseabilidad social — la gran mayoría elige la respuesta “de entrevista” sin importar su conducta real.</p>
     <table>
       <tr><th>Formato de pregunta</th><th>% que eligió la respuesta “ideal”</th><th>Veredicto</th></tr>
       <tr><td>“¿Con qué frecuencia has faltado?” (directa)</td><td>69% “nunca”</td><td>Inservible</td></tr>
       <tr><td>“¿A qué atribuyes tus errores?” (transparente)</td><td>98% autocrítica</td><td>Inservible</td></tr>
       <tr><td>Autoevaluación de virtud (1–5)</td><td>73% marca 5/5</td><td>Inservible</td></tr>
+      <tr><td>“Ante un desacuerdo, ¿qué haces?” (moralizada)</td><td>81% “lo hablo directamente”</td><td>Inservible</td></tr>
       <tr><td>Dilema situacional con opciones intermedias dignas</td><td>La cola del 13.5% discrimina (p=0.001)</td><td><b>Funciona</b></td></tr>
-      <tr><td>Hechos verificables del historial</td><td>Dispersión sana</td><td><b>Funciona</b></td></tr>
-      <tr><td>Actitud con redacción neutra</td><td>Dispersión sana, predice rotación (p=0.001)</td><td><b>Funciona</b></td></tr>
+      <tr><td>Hechos verificables del historial</td><td>Dispersión sana (moda 42%)</td><td><b>Funciona</b></td></tr>
+      <tr><td>Actitud con redacción neutra</td><td>Dispersión sana (moda 36%), predice rotación (p=0.001)</td><td><b>Funciona</b></td></tr>
     </table>
-    <p>Por eso <b>ningún ítem del IRRT pregunta virtud en abstracto</b>. El instrumento combina: hechos laborales verificables contra referencias, dilemas situacionales con opciones igualmente presentables, elección forzada entre motivadores equivalentes en deseabilidad, y controles internos de confiabilidad (consistencia, atención, patrones de respuesta y tiempos). Estas familias de técnicas —juicio situacional, elección forzada, biodata y escalas de validez— son estándar en la literatura de selección de personal y cuentan con décadas de evidencia meta-analítica; los tests de integridad bien construidos reportan validez en torno a 0.3 para predecir conductas contraproducentes en el trabajo.</p>
+    <p><b>Regla de diseño derivada: ningún ítem del IRRT pregunta virtud en abstracto.</b> Todo se pregunta como hecho verificable, como dilema con salidas dignas, o como elección forzada entre opciones igualmente presentables.</p>
   </div>
 
   <div class="card">
-    <h2>4 · Qué entrega el instrumento</h2>
+    <h2>5 · La ciencia detrás de cada formato de pregunta</h2>
+    <p>Cada familia de ítems del IRRT usa una técnica con décadas de evidencia publicada en la literatura de selección de personal. La tabla resume qué técnica es, por qué resiste la mentira y su respaldo científico:</p>
+    <table>
+      <tr><th>Técnica</th><th>Cómo funciona y por qué resiste el engaño</th><th>Respaldo científico</th></tr>
+      <tr><td><b>Tests de integridad</b></td><td>Miden actitudes y dilemas asociados a conductas contraproducentes (ausentismo, robo de tiempo, rotación). Funcionan incluso con candidatos motivados a quedar bien, porque la “cola” que elige opciones de riesgo se autoselecciona.</td><td>Meta-análisis clásico de 665 coeficientes: validez ≈ 0.32–0.41 para conductas contraproducentes (Ones, Viswesvaran &amp; Schmidt, 1993, <i>Journal of Applied Psychology</i>); confirmado en la síntesis de 85 años de investigación en selección (Schmidt &amp; Hunter, 1998, <i>Psychological Bulletin</i>).</td></tr>
+      <tr><td><b>Juicio situacional (SJT)</b></td><td>Escenarios reales con opciones todas plausibles y defendibles. No hay respuesta “de manual”: elegir revela el criterio propio. Nuestros escenarios provienen de los relatos reales del estudio base.</td><td>Meta-análisis de tests de juicio situacional: validez ≈ 0.26–0.34 para desempeño y conducta laboral (McDaniel et al., 2001; 2007, <i>Personnel Psychology</i>).</td></tr>
+      <tr><td><b>Elección forzada</b></td><td>El candidato elige entre frases igualmente deseables (“MÁS me describe / MENOS me describe”). Es matemáticamente imposible inflar todas las respuestas a la vez.</td><td>Formato estándar de resistencia al inflado; los formatos de elección forzada reducen la distorsión por deseabilidad social frente a escalas Likert y mantienen validez de criterio (Salgado &amp; Táuriz, 2014, meta-análisis, <i>European Journal of Work and Organizational Psychology</i>; Christiansen et al., 2005).</td></tr>
+      <tr><td><b>Biodata verificable</b></td><td>Hechos del historial con fecha y forma de terminación, contrastables en la llamada de referencias. Los hechos no tienen “respuesta ideal” y mentir es falsificable — y el candidato lo sabe.</td><td>Los datos biográficos están entre los predictores con mayor validez incremental en selección (Schmidt &amp; Hunter, 1998); la verificabilidad reduce el inflado (Becker &amp; Colquitt, 1992, <i>Personnel Psychology</i>).</td></tr>
+      <tr><td><b>Advertencia de verificación</b></td><td>Se informa —con verdad— que el historial se confirma con referencias. La advertencia creíble disuade el engaño antes de que ocurra, sin afectar al candidato honesto.</td><td>Meta-evidencia experimental: las advertencias de identificación de faking reducen la distorsión de respuestas ≈ 0.23 desviaciones estándar (Dwight &amp; Donovan, 2003, <i>Human Performance</i>).</td></tr>
+      <tr><td><b>Preguntas proyectivas (norma percibida)</b></td><td>Se pregunta “¿cuántos de tus excompañeros harían X?”. Quien practica una conducta la cree más común de lo que es, y se delata al estimar la norma — sin autoincriminarse.</td><td>Efecto de falso consenso, uno de los sesgos más replicados de la psicología social (Ross, Greene &amp; House, 1977, <i>Journal of Experimental Social Psychology</i>).</td></tr>
+      <tr><td><b>Escalas de validez</b></td><td>Ítems de virtud imposible (“jamás he dicho una mentira”), verificación de atención, consistencia entre preguntas separadas y análisis de tiempos. Detectan el intento de “responder para la galería” y anulan el resultado en vez de arriesgar una decisión con datos falsos.</td><td>Práctica estándar de los inventarios psicométricos profesionales (escalas tipo Marlowe-Crowne de deseabilidad social; Crowne &amp; Marlowe, 1960) e ítems de atención instruccional (Meade &amp; Craig, 2012, <i>Psychological Methods</i>).</td></tr>
+      <tr><td><b>Detección de victimización</b></td><td>El patrón de “atribución externa pervasiva” (todos los problemas fueron siempre culpa de otros, sin un episodio de autocrítica) se mide con ítems de experiencia, no de moral — el patrón se asocia a conflicto interpersonal recurrente.</td><td>Constructo de Tendencia a la Victimización Interpersonal (TIV): Gabay, Hameiri, Rubel-Lifschitz &amp; Nadler, 2020, <i>Personality and Individual Differences</i>; literatura de locus de control externo y resultados laborales (Ng, Sorensen &amp; Eby, 2006).</td></tr>
+    </table>
+    <p class="sub">Importante: estas técnicas son ciencia pública. Lo propietario del IRRT es su aplicación específica — los ítems redactados para este mercado, sus claves de calificación, las ponderaciones y los umbrales — que provienen de nuestra investigación propia y no se publican.</p>
+  </div>
+
+  <div class="card">
+    <h2>6 · Qué entrega el instrumento</h2>
     <p>El candidato responde 35 ítems (10–12 minutos, desde su celular). El sistema calcula un índice de riesgo (0–100) y clasifica:</p>
     <p style="margin:12px 0">
       <span class="tag t-verde">VERDE</span> Sin señales relevantes: avanza.<br><br>
       <span class="tag t-amar">AMARILLO-P · PRECARIZADO</span> Historial inestable por causas externas comprobables (contratos de obra, cierres, recortes). <b>No se penaliza:</b> se verifica con referencias y se contrata con normalidad. En nuestro estudio, el 27% de las salidas no fueron decisión del trabajador — castigar el historial corto sin contexto descarta talento bueno.<br><br>
-      <span class="tag t-amar">AMARILLO-V · AUTO-VICTIMIZACIÓN</span> Patrón de atribución externa pervasiva: todos los problemas fueron siempre culpa de jefes y empresas, sin un solo episodio de autocrítica. Este patrón se asocia a conflicto recurrente y salida rápida. Activa una entrevista dirigida, nunca un rechazo automático.<br><br>
+      <span class="tag t-amar">AMARILLO-V · AUTO-VICTIMIZACIÓN</span> Patrón de atribución externa pervasiva: todos los problemas fueron siempre culpa de jefes y empresas, sin un solo episodio de autocrítica. Se asocia a conflicto recurrente y salida rápida. Activa una entrevista dirigida, nunca un rechazo automático.<br><br>
       <span class="tag t-rojo">ROJO · RIESGO DE ROTACIÓN OPORTUNISTA</span> Acumulación de señales: disposición admitida a mentir para ausentarse, renuncias tempranas repetidas sin causa externa, motivación de “empleo mientras tanto”. Requiere doble confirmación humana (entrevista + referencias) antes de cualquier decisión.<br><br>
       <span class="tag" style="background:#8A8F94">NO INTERPRETABLE</span> Los controles internos detectaron respuestas para quedar bien, sin lectura o demasiado rápidas. El resultado se anula y se recomienda repetir — no cuenta como señal negativa.
     </p>
-    <p class="sub">La distinción entre los tres perfiles de riesgo (oportunista, precarizado, auto-victimizado) proviene del análisis cualitativo del estudio: los tres comparten historial inestable, pero solo uno predice rotación por decisión propia. Un filtro que no los separa comete los dos errores caros a la vez: rechaza al bueno y deja pasar al que sabe responder.</p>
+    <p class="sub">La distinción entre los tres perfiles de riesgo proviene del análisis cualitativo del estudio: los tres comparten historial inestable, pero solo uno predice rotación por decisión propia. Un filtro que no los separa comete los dos errores caros a la vez: rechaza al bueno y deja pasar al que sabe responder.</p>
   </div>
 
   <div class="card">
-    <h2>5 · Resistencia a la manipulación</h2>
-    <p>El IRRT fue diseñado asumiendo que algunos candidatos intentarán responder “lo que la empresa quiere oír”. Incluye múltiples mecanismos simultáneos de detección y disuasión: advertencia veraz de verificación de historial, controles de deseabilidad social, ítems de atención, análisis de consistencia interna entre preguntas separadas, análisis de tiempos de respuesta por sección y variantes rotativas del contenido. Cuando estos controles se activan, el resultado se marca como no confiable en lugar de arriesgar una decisión con datos falsos.</p>
-    <p class="sub">El intento de “responder bien” sin ser el perfil deja rastros medibles: en las pruebas de producción, los perfiles simulados de respuesta ideal fueron correctamente marcados como no interpretables.</p>
+    <h2>7 · Resistencia a la manipulación, demostrada</h2>
+    <p>El IRRT asume que algunos candidatos intentarán responder “lo que la empresa quiere oír”, y apila múltiples mecanismos simultáneos: advertencia veraz de verificación, controles de deseabilidad social, ítems de atención, consistencia interna entre preguntas separadas, análisis de tiempos por sección y variantes rotativas del contenido. Cuando los controles se activan, el resultado se anula en lugar de arriesgar una decisión con datos falsos.</p>
+    <p class="sub">Prueba de fuego en producción: los intentos simulados de “responder perfecto” fueron correctamente marcados como no interpretables por la combinación de deseabilidad extrema, fallo de atención y velocidad anómala.</p>
   </div>
 
   <div class="card">
-    <h2>6 · Ética, legalidad y límites</h2>
+    <h2>8 · Ética, legalidad y límites</h2>
     <ul>
       <li><b>Decisión humana siempre:</b> el instrumento recomienda profundizar o verificar; ningún candidato es rechazado automáticamente por un puntaje.</li>
       <li><b>Habeas data (Ley 1581 de 2012):</b> consentimiento explícito, finalidad declarada, datos usados solo en el proceso de selección.</li>
       <li><b>No discriminación:</b> el IRRT no pregunta ni infiere embarazo, salud, religión, orientación, afiliación sindical ni estrato. Las variables de contexto familiar se usan únicamente como información de bienestar y nunca como criterio de exclusión.</li>
-      <li><b>Monitoreo de equidad:</b> las tasas de clasificación se auditan periódicamente por sexo, edad y nivel educativo para detectar y corregir impacto adverso.</li>
+      <li><b>Monitoreo de equidad:</b> las tasas de clasificación se auditan periódicamente por sexo, edad y nivel educativo para detectar y corregir impacto adverso (regla de referencia del 80%, guías uniformes de selección).</li>
       <li><b>Lo que NO mide:</b> desempeño técnico, inteligencia, personalidad ni valor moral de la persona. Mide riesgo de una conducta específica: rotación temprana voluntaria y ausentismo.</li>
     </ul>
   </div>
 
   <div class="card">
-    <h2>7 · Validación y mejora continua</h2>
-    <p>Los umbrales de clasificación se calibraron inicialmente con la distribución del estudio base (la zona roja captura ~15% de la población, consistente con el 13.5% que admitió disposición a mentir y el 11% que acumuló 3+ señales de riesgo). El plan de validación en curso contrasta las clasificaciones con resultados reales — presentación al primer día, asistencia a 30/60/90 días y rotación voluntaria — y recalibra el modelo con cada cohorte. Meta psicométrica: correlación predictiva igual o superior al estándar publicado para tests de integridad.</p>
+    <h2>9 · Validación y mejora continua</h2>
+    <p>Los umbrales de clasificación se calibraron con la distribución del estudio base: la zona roja captura ~15% de la población, consistente con el 13.5% que admitió disposición a mentir y el 11% que acumuló 3+ señales de riesgo. El plan de validación en curso contrasta las clasificaciones con resultados reales — presentación al primer día, asistencia a 30/60/90 días y rotación voluntaria — y recalibra el modelo con cada cohorte contratada.</p>
+    <p><b>Meta psicométrica declarada:</b> correlación predictiva igual o superior al estándar publicado para tests de integridad (≈0.3, Ones et al., 1993). Un instrumento contextualizado al mercado local, con biodata verificable y controles de validez, tiene bases razonables para alcanzarlo — y lo reportaremos a nuestros clientes con la misma transparencia de esta página.</p>
     <p class="sub">Las empresas usuarias reciben el beneficio directo de esta calibración: el instrumento mejora con cada proceso que corre en la plataforma.</p>
+  </div>
+
+  <div class="card">
+    <h3>Referencias metodológicas</h3>
+    <p class="refs">
+      Ones, D. S., Viswesvaran, C., & Schmidt, F. L. (1993). Comprehensive meta-analysis of integrity test validities. <i>Journal of Applied Psychology, 78</i>(4).<br>
+      Schmidt, F. L., & Hunter, J. E. (1998). The validity and utility of selection methods in personnel psychology: Practical and theoretical implications of 85 years of research findings. <i>Psychological Bulletin, 124</i>(2).<br>
+      McDaniel, M. A., et al. (2001; 2007). Meta-analyses of situational judgment tests. <i>Personnel Psychology</i>.<br>
+      Salgado, J. F., & Táuriz, G. (2014). The Five-Factor Model, forced-choice personality inventories and performance. <i>European Journal of Work and Organizational Psychology, 23</i>(1).<br>
+      Dwight, S. A., & Donovan, J. J. (2003). Do warnings not to fake reduce faking? <i>Human Performance, 16</i>(1).<br>
+      Ross, L., Greene, D., & House, P. (1977). The false consensus effect. <i>Journal of Experimental Social Psychology, 13</i>(3).<br>
+      Crowne, D. P., & Marlowe, D. (1960). A new scale of social desirability. <i>Journal of Consulting Psychology, 24</i>(4).<br>
+      Meade, A. W., & Craig, S. B. (2012). Identifying careless responses in survey data. <i>Psychological Methods, 17</i>(3).<br>
+      Gabay, R., Hameiri, B., Rubel-Lifschitz, T., & Nadler, A. (2020). The tendency for interpersonal victimhood. <i>Personality and Individual Differences, 165</i>.<br>
+      Ng, T. W. H., Sorensen, K. L., & Eby, L. T. (2006). Locus of control at work: a meta-analysis. <i>Journal of Organizational Behavior, 27</i>(8).<br>
+      Estudio base: PeakU × Vilü (2026). <i>¿Por qué no llegan? Radiografía del no-show, el ausentismo y la deserción temprana</i> (n=163, Colombia).
+    </p>
   </div>
 
   <div class="propiedad">
@@ -131,8 +174,8 @@
   </div>
 
   <footer>
-    IRRT v1.0 · Basado en el estudio “¿Por qué no llegan?” (n=163, Colombia, 2026) · PeakU × Vilü · Todos los derechos reservados<br>
-    Referencias metodológicas disponibles para clientes bajo acuerdo de confidencialidad.
+    IRRT · Basado en el estudio “¿Por qué no llegan?” (n=163, Colombia, 2026) · PeakU × Vilü · Todos los derechos reservados<br>
+    Detalle metodológico ampliado disponible para clientes bajo acuerdo de confidencialidad.
   </footer>
 </div>
 </body>

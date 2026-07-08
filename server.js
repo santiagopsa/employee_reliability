@@ -1,7 +1,8 @@
-/* IRRT v1.0 — Servidor (Node.js sin dependencias)
+/* IRRT v1.1 — Servidor (Node.js)
  * PeakU × Vilü · Instrumento de Riesgo de Rotación Temprana
- * Correr local:  node server.js  →  http://localhost:3000
- * En Render:     Start Command = node server.js  (PORT lo pone Render)
+ * Local:   node server.js            → http://localhost:3000  (guarda en data/db.json)
+ * Render:  con DATABASE_URL definida → usa Postgres (los datos sobreviven deploys)
+ *          Build Command: npm install · Start Command: node server.js
  *
  * IMPORTANTE: la clave de puntuación vive SOLO aquí (servidor).
  * El cliente nunca recibe pesos, claves ni umbrales.
@@ -19,14 +20,14 @@ const DB_FILE = path.join(DATA_DIR, 'db.json');
 /* ================= CONFIG CALIBRABLE (sección 7 y 10 del documento IRRT) ================= */
 const CONFIG = {
   PESOS: { B: 0.40, A: 0.25, C: 0.20, E: 0.15 },
-  CORTE_VERDE: 40,        // < 40 → verde (proxy p70; recalibrar con base real)
-  CORTE_ROJO: 55,         // >= 55 → rojo (proxy p85)
+  CORTE_VERDE: 40,
+  CORTE_ROJO: 55,
   MULT_SIN_ANCLAS: 1.15,
-  UMBRAL_DRIVER_PUENTE: 3,     // sobre 4.5
-  UMBRAL_AMARILLO_V: 22,       // D compuesto 6–30 (proxy p75; recalibrar)
-  UMBRAL_EST: 2 / 3,           // proporción de terminaciones estructurales
-  // pisos de tiempo por bloque en segundos (V5): por debajo = flag de velocidad
-  PISOS_TIEMPO: { A: 25, B: 45, C: 15, D: 20, E: 8, F: 10 }
+  UMBRAL_DRIVER_PUENTE: 3,
+  UMBRAL_AMARILLO_V: 22,
+  UMBRAL_EST: 2 / 3,
+  PISOS_TIEMPO: { A: 25, B: 45, C: 15, D: 20, E: 8, F: 10 },
+  LIMITE_GRATIS: 10   // evaluaciones con resultado visible por empresa (plan de prueba)
 };
 
 /* ================= CATÁLOGO DE ÍTEMS (lo que SÍ ve el cliente: sin claves) ================= */
@@ -119,33 +120,30 @@ const CATALOGO = {
 
 /* ================= CLAVES DE PUNTUACIÓN (server-only) ================= */
 const CLAVE_B = { b1: [0, 0, 3, 4], b2: [0, 1, 3, 4], b3: [0, 0, 2, 4], b4: [0, 2, 1, 4], b5: [0, 2, 0, 3], b6: [0, 1, 3, 4] };
-const MAX_B = 4 + 4 + 4 + 4 + 3 + 4; // 23
-const PROYECTIVAS = { b1p: 'b1', b2p: 'b2', b4p: 'b4' }; // "6 o más" (idx 2) → ×1.5 si el base > 0
-const B_AV = { b2: [1], b4: [1] };   // opciones que suman leve a AV (resignación/evasión): b2.b, b4.b
-const ESTRUCTURALES = [1, 2];        // a3: fin contrato/obra, cierre/quiebra/recorte
+const MAX_B = 23;
+const PROYECTIVAS = { b1p: 'b1', b2p: 'b2', b4p: 'b4' };
+const B_AV = { b2: [1], b4: [1] };
+const ESTRUCTURALES = [1, 2];
 const RENUNCIA_SIN_OFERTA = 5, RENUNCIA_CON_OFERTA = 4;
 
 function puntuar(r, tiempos) {
   const notas = [];
-  /* ---- Bloque A ---- */
   const empleos = r.empleos || [];
   const n = empleos.length;
   let svt = 0, est = 0, impulsivas = 0, inconsistenciaA = false, salidaConflicto = false;
   for (const e of empleos) {
-    const tenureCorto = e.a1 <= 1; // <6 meses
+    const tenureCorto = e.a1 <= 1;
     if (e.a3 === RENUNCIA_SIN_OFERTA && tenureCorto) svt++;
     if (ESTRUCTURALES.includes(e.a3)) est++;
     if ((e.a3 === RENUNCIA_SIN_OFERTA || e.a3 === RENUNCIA_CON_OFERTA) && e.a4 === 0) impulsivas++;
     if (e.a3 === RENUNCIA_SIN_OFERTA || (e.a3 === RENUNCIA_CON_OFERTA && e.a4 === 0)) salidaConflicto = true;
-    if (e.a3 === RENUNCIA_SIN_OFERTA && e.a5 === 0) inconsistenciaA = true; // renunció sin nada y "pasó directo"
+    if (e.a3 === RENUNCIA_SIN_OFERTA && e.a5 === 0) inconsistenciaA = true;
   }
   const pctSVT = n ? svt / n : 0;
   const pctEST = n ? est / n : 0;
-  let compA = pctSVT * 100 + (impulsivas >= 2 ? 10 : 0);
-  compA = Math.min(compA, 100);
+  let compA = Math.min(pctSVT * 100 + (impulsivas >= 2 ? 10 : 0), 100);
   if (n === 0) notas.push('Sin historial laboral reciente: componente A neutro (no penaliza primer empleo).');
 
-  /* ---- Bloque B ---- */
   let rawB = 0, avLeve = 0;
   for (const k of Object.keys(CLAVE_B)) {
     let pts = CLAVE_B[k][r[k]] ?? 0;
@@ -156,7 +154,6 @@ function puntuar(r, tiempos) {
   }
   const compB = Math.min((rawB / MAX_B) * 100, 100);
 
-  /* ---- Bloque C: driver puente ---- */
   let puente = 0;
   if (r.c1mas === 0) puente += 0.5; if (r.c1menos === 1) puente += 0.5;
   if (r.c2mas === 0) puente += 0.5; if (r.c2menos === 2) puente += 0.5;
@@ -164,24 +161,20 @@ function puntuar(r, tiempos) {
   if (r.c4mas === 0 || r.c4mas === 3) puente += 1; if (r.c4menos === 2) puente += 0.5;
   const compC = Math.min((puente / 4.5) * 100, 100);
 
-  /* ---- Bloque D: Amarillo-V (likert 0-4 → 1-5) ---- */
   const L = k => (r[k] ?? 2) + 1;
-  const dScore = L('d1') + L('d2') + L('d3') + L('d6') + (6 - L('d4')) + (6 - L('d5')); // 6–30
+  const dScore = L('d1') + L('d2') + L('d3') + L('d6') + (6 - L('d4')) + (6 - L('d5'));
 
-  /* ---- Bloque E ---- */
   let ptsE = 0;
   if (L('e1') >= 4) ptsE += 2;
   const driverAlto = puente >= CONFIG.UMBRAL_DRIVER_PUENTE;
   if ((r.e3 === 3 || r.e3 === 4) && driverAlto) ptsE += 1;
   const compE = Math.min((ptsE / 3) * 100, 100);
 
-  /* ---- Índice Rojo ---- */
   let rojo = CONFIG.PESOS.B * compB + CONFIG.PESOS.A * compA + CONFIG.PESOS.C * compC + CONFIG.PESOS.E * compE;
   const sinAnclas = r.f3 === 0 && r.f4 === 2;
   if (sinAnclas) { rojo *= CONFIG.MULT_SIN_ANCLAS; notas.push('Sin anclas (F): multiplicador 1.15 aplicado.'); }
   rojo = Math.min(Math.round(rojo * 10) / 10, 100);
 
-  /* ---- Validez ---- */
   const flags = [];
   const deseab = (L('v1') === 5 ? 1 : 0) + (L('v2') === 5 ? 1 : 0) + (L('v3') === 5 ? 1 : 0);
   if (deseab >= 2) flags.push('Deseabilidad social extrema (2+ virtudes imposibles en tope)');
@@ -195,8 +188,7 @@ function puntuar(r, tiempos) {
   if (aquiescencia && inconsistenciaA) flags.push('Inconsistencias simultáneas E1/E2 y A3/A5 (M6)');
   const interpretable = flags.length === 0;
 
-  /* ---- Banderas y semáforo ---- */
-  const amarilloP = n >= 2 && pctEST >= CONFIG.UMBRAL_EST && dScore < CONFIG.UMBRAL_AMARILLO_V; // requiere 2+ empleos: con 1 solo, la evidencia es débil
+  const amarilloP = n >= 2 && pctEST >= CONFIG.UMBRAL_EST && dScore < CONFIG.UMBRAL_AMARILLO_V;
   const amarilloV = dScore >= CONFIG.UMBRAL_AMARILLO_V && salidaConflicto;
 
   let semaforo, accion;
@@ -208,7 +200,7 @@ function puntuar(r, tiempos) {
     accion = 'Solo avanza con doble confirmación: entrevista estructurada + referencias limpias. En cargos de asistencia crítica, recomendación de no avanzar.';
   } else if (amarilloV) {
     semaforo = 'AMARILLO-V';
-    accion = 'Entrevista dirigida de agencia (Anexo B del manual) + segunda referencia preguntando cómo fue la salida. Contratable si aparece al menos un episodio de agencia propia.';
+    accion = 'Entrevista dirigida de agencia + segunda referencia preguntando cómo fue la salida. Contratable si aparece al menos un episodio de agencia propia.';
   } else if (amarilloP) {
     semaforo = 'AMARILLO-P';
     accion = 'Verificar referencias (fechas y causas de salida). Historial corto NO penaliza: es estructural. Contratable con onboarding estándar.';
@@ -232,19 +224,81 @@ function puntuar(r, tiempos) {
   };
 }
 
-/* ================= PERSISTENCIA (JSON con escritura atómica) ================= */
-function loadDB() {
-  try { return JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); }
-  catch { return { empresas: {}, aplicaciones: [] }; }
+/* ================= CAPA DE ALMACENAMIENTO =================
+ * Con DATABASE_URL (Render Postgres): tablas irrt_empresas / irrt_aplicaciones.
+ * Sin DATABASE_URL (local): archivo data/db.json.
+ * Único punto a tocar para cambiar de motor.
+ */
+let store;
+
+class FileStore {
+  constructor() { this._load(); }
+  _load() {
+    try { this.db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); }
+    catch { this.db = { empresas: {}, aplicaciones: [] }; }
+    if (!this.db.empresas) this.db.empresas = {};
+    if (!this.db.aplicaciones) this.db.aplicaciones = [];
+  }
+  _save() {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    const tmp = DB_FILE + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(this.db, null, 1));
+    fs.renameSync(tmp, DB_FILE);
+  }
+  async init() {}
+  async empresaPorId(id) { return this.db.empresas[id] || null; }
+  async empresaPorEmail(email) {
+    return Object.values(this.db.empresas).find(e => e.email === email) || null;
+  }
+  async crearEmpresa(emp) { this.db.empresas[emp.empresaId] = emp; this._save(); }
+  async guardarAplicacion(app) { this.db.aplicaciones.push(app); this._save(); }
+  async aplicacionesDeEmpresa(empresaId) {
+    return this.db.aplicaciones.filter(a => a.empresaId === empresaId);
+  }
 }
-function saveDB(db) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  const tmp = DB_FILE + '.tmp';
-  fs.writeFileSync(tmp, JSON.stringify(db, null, 1));
-  fs.renameSync(tmp, DB_FILE);
+
+class PgStore {
+  constructor(url) {
+    const { Pool } = require('pg');
+    this.pool = new Pool({ connectionString: url, ssl: { rejectUnauthorized: false } });
+  }
+  async init() {
+    await this.pool.query(`CREATE TABLE IF NOT EXISTS irrt_empresas(
+      id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, data JSONB NOT NULL)`);
+    await this.pool.query(`CREATE TABLE IF NOT EXISTS irrt_aplicaciones(
+      id TEXT PRIMARY KEY, empresa_id TEXT NOT NULL, fecha TEXT NOT NULL, data JSONB NOT NULL)`);
+    await this.pool.query(`CREATE INDEX IF NOT EXISTS irrt_apps_emp ON irrt_aplicaciones(empresa_id)`);
+  }
+  async empresaPorId(id) {
+    const r = await this.pool.query('SELECT data FROM irrt_empresas WHERE id=$1', [id]);
+    return r.rows[0] ? r.rows[0].data : null;
+  }
+  async empresaPorEmail(email) {
+    const r = await this.pool.query('SELECT data FROM irrt_empresas WHERE email=$1', [email]);
+    return r.rows[0] ? r.rows[0].data : null;
+  }
+  async crearEmpresa(emp) {
+    await this.pool.query('INSERT INTO irrt_empresas(id,email,data) VALUES($1,$2,$3)', [emp.empresaId, emp.email, emp]);
+  }
+  async guardarAplicacion(app) {
+    await this.pool.query('INSERT INTO irrt_aplicaciones(id,empresa_id,fecha,data) VALUES($1,$2,$3,$4)', [app.id, app.empresaId, app.fecha, app]);
+  }
+  async aplicacionesDeEmpresa(empresaId) {
+    const r = await this.pool.query('SELECT data FROM irrt_aplicaciones WHERE empresa_id=$1', [empresaId]);
+    return r.rows.map(x => x.data);
+  }
 }
+
+if (process.env.DATABASE_URL) {
+  try { store = new PgStore(process.env.DATABASE_URL); console.log('Almacenamiento: Postgres'); }
+  catch (e) { console.error('No se pudo cargar pg (' + e.message + '); usando archivo local.'); store = new FileStore(); }
+} else {
+  store = new FileStore(); console.log('Almacenamiento: archivo local (data/db.json)');
+}
+
 const hash = s => crypto.scryptSync(s, 'irrt-v1-salt', 32).toString('hex');
 const id = len => crypto.randomBytes(24).toString('base64url').replace(/[-_]/g, '').slice(0, len);
+const emailValido = e => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e || '');
 
 /* ================= HTTP ================= */
 function json(res, code, obj) {
@@ -258,10 +312,11 @@ function leerBody(req) {
     req.on('end', () => { try { ok(b ? JSON.parse(b) : {}); } catch (e) { bad(e); } });
   });
 }
-function autenticar(req, db) {
+async function autenticar(req) {
   const eid = req.headers['x-empresa-id'], clave = req.headers['x-clave'];
-  const emp = eid && db.empresas[eid];
-  if (!emp || !clave || hash(clave) !== emp.claveHash) return null;
+  if (!eid || !clave) return null;
+  const emp = await store.empresaPorId(eid);
+  if (!emp || hash(clave) !== emp.claveHash) return null;
   return emp;
 }
 function servirArchivo(res, nombre, tipo) {
@@ -272,77 +327,84 @@ function servirArchivo(res, nombre, tipo) {
   } catch { res.writeHead(404); res.end('No encontrado'); }
 }
 
+/* Aplica el límite freemium: las primeras N (cronológicas) muestran resultado; el resto queda bloqueado. */
+function aplicarLimite(apps) {
+  const orden = [...apps].sort((x, y) => x.fecha.localeCompare(y.fecha));
+  const visibles = new Set(orden.slice(0, CONFIG.LIMITE_GRATIS).map(a => a.id));
+  const lista = apps.map(a => visibles.has(a.id)
+    ? { id: a.id, fecha: a.fecha, candidato: a.candidato, resultado: a.resultado, bloqueado: false }
+    : { id: a.id, fecha: a.fecha, candidato: a.candidato, bloqueado: true }
+  ).sort((x, y) => y.fecha.localeCompare(x.fecha));
+  return { lista, usadas: Math.min(apps.length, CONFIG.LIMITE_GRATIS), bloqueadas: Math.max(0, apps.length - CONFIG.LIMITE_GRATIS) };
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   const p = url.pathname;
   try {
-    /* ---- páginas ---- */
     if (req.method === 'GET' && (p === '/' || p === '/portal')) return servirArchivo(res, 'portal.html', 'text/html');
     if (req.method === 'GET' && p.startsWith('/encuesta/')) return servirArchivo(res, 'encuesta.html', 'text/html');
     if (req.method === 'GET' && p === '/metodologia') return servirArchivo(res, 'metodologia.html', 'text/html');
 
-    /* ---- API pública ---- */
     if (req.method === 'GET' && p === '/api/catalogo') return json(res, 200, CATALOGO);
 
     if (req.method === 'GET' && p.startsWith('/api/empresa-publica/')) {
-      const db = loadDB(); const emp = db.empresas[p.split('/').pop()];
+      const emp = await store.empresaPorId(p.split('/').pop());
       if (!emp) return json(res, 404, { error: 'Enlace inválido: la empresa no existe.' });
       return json(res, 200, { nombre: emp.nombre });
     }
 
     if (req.method === 'POST' && p === '/api/empresas') {
       const b = await leerBody(req);
-      if (!b.nombre || !b.email) return json(res, 400, { error: 'Nombre de empresa y email son obligatorios.' });
-      const db = loadDB();
+      const email = String(b.email || '').trim().toLowerCase();
+      if (!b.nombre || !emailValido(email)) return json(res, 400, { error: 'Nombre de empresa y un correo válido son obligatorios.' });
+      if (await store.empresaPorEmail(email)) return json(res, 409, { error: 'Ese correo ya está registrado. Usa "Ya tengo cuenta" para entrar.' });
       const empresaId = id(8), clave = id(10);
-      db.empresas[empresaId] = { empresaId, nombre: String(b.nombre).slice(0, 120), email: String(b.email).slice(0, 120), claveHash: hash(clave), creada: new Date().toISOString() };
-      saveDB(db);
-      return json(res, 201, { empresaId, clave, aviso: 'Guarda esta clave: solo se muestra una vez.' });
+      await store.crearEmpresa({ empresaId, nombre: String(b.nombre).slice(0, 120), email, claveHash: hash(clave), creada: new Date().toISOString() });
+      return json(res, 201, { empresaId, email, clave, aviso: 'Tu usuario es tu correo. Guarda la clave: solo se muestra una vez.' });
+    }
+
+    if (req.method === 'POST' && p === '/api/login') {
+      const b = await leerBody(req);
+      const email = String(b.email || '').trim().toLowerCase();
+      const emp = email ? await store.empresaPorEmail(email) : await store.empresaPorId(b.empresaId);
+      if (!emp || hash(b.clave || '') !== emp.claveHash) return json(res, 401, { error: 'Correo o clave incorrecta.' });
+      return json(res, 200, { ok: true, nombre: emp.nombre, empresaId: emp.empresaId, email: emp.email });
     }
 
     if (req.method === 'POST' && p === '/api/aplicaciones') {
       const b = await leerBody(req);
-      const db = loadDB();
-      if (!b.empresaId || !db.empresas[b.empresaId]) return json(res, 400, { error: 'Empresa inválida.' });
+      if (!b.empresaId || !(await store.empresaPorId(b.empresaId))) return json(res, 400, { error: 'Empresa inválida.' });
       if (!b.candidato || !b.candidato.nombre || !b.candidato.documento) return json(res, 400, { error: 'Faltan datos del candidato.' });
       if (!b.consentimiento) return json(res, 400, { error: 'Se requiere el consentimiento de datos.' });
       const resultado = puntuar(b.respuestas || {}, b.tiempos || {});
-      db.aplicaciones.push({
+      await store.guardarAplicacion({
         id: id(10), empresaId: b.empresaId,
         candidato: { nombre: String(b.candidato.nombre).slice(0, 90), documento: String(b.candidato.documento).slice(0, 30), vacante: String(b.candidato.vacante || '').slice(0, 90) },
         fecha: new Date().toISOString(), respuestas: b.respuestas, tiempos: b.tiempos, resultado
       });
-      saveDB(db);
-      // Al candidato NUNCA se le devuelve el puntaje
       return json(res, 201, { ok: true, mensaje: '¡Listo! Tus respuestas fueron enviadas. La empresa continuará el proceso contigo.' });
     }
 
-    /* ---- API autenticada (empresa) ---- */
-    if (req.method === 'POST' && p === '/api/login') {
-      const b = await leerBody(req); const db = loadDB();
-      const emp = db.empresas[b.empresaId];
-      if (!emp || hash(b.clave || '') !== emp.claveHash) return json(res, 401, { error: 'Empresa o clave incorrecta.' });
-      return json(res, 200, { ok: true, nombre: emp.nombre, empresaId: emp.empresaId });
-    }
-
     if (req.method === 'GET' && p === '/api/resultados') {
-      const db = loadDB(); const emp = autenticar(req, db);
+      const emp = await autenticar(req);
       if (!emp) return json(res, 401, { error: 'No autorizado.' });
-      const lista = db.aplicaciones.filter(a => a.empresaId === emp.empresaId)
-        .map(a => ({ id: a.id, fecha: a.fecha, candidato: a.candidato, resultado: a.resultado }))
-        .sort((x, y) => y.fecha.localeCompare(x.fecha));
-      return json(res, 200, { empresa: emp.nombre, total: lista.length, resultados: lista });
+      const apps = await store.aplicacionesDeEmpresa(emp.empresaId);
+      const { lista, usadas, bloqueadas } = aplicarLimite(apps);
+      return json(res, 200, {
+        empresa: emp.nombre, total: apps.length, resultados: lista,
+        plan: { tipo: 'prueba', limite: CONFIG.LIMITE_GRATIS, usadas, bloqueadas }
+      });
     }
 
     if (req.method === 'GET' && p === '/api/config-publica') {
-      // solo etiquetas de interpretación para el panel (sin claves de ítems)
-      return json(res, 200, { cortes: { verde: CONFIG.CORTE_VERDE, rojo: CONFIG.CORTE_ROJO }, version: 'IRRT v1.0' });
+      return json(res, 200, { cortes: { verde: CONFIG.CORTE_VERDE, rojo: CONFIG.CORTE_ROJO }, limiteGratis: CONFIG.LIMITE_GRATIS, version: 'IRRT v1.1' });
     }
 
     if (req.method === 'POST' && p === '/api/demo') {
-      const db = loadDB();
       const empresaId = id(8), clave = id(10);
-      db.empresas[empresaId] = { empresaId, nombre: 'Empresa Demo IRRT', email: 'demo@peaku.co', claveHash: hash(clave), creada: new Date().toISOString() };
+      const email = ('demo+' + empresaId + '@peaku.co').toLowerCase();
+      await store.crearEmpresa({ empresaId, nombre: 'Empresa Demo IRRT', email, claveHash: hash(clave), creada: new Date().toISOString() });
       const casos = [
         ['Carlos Verde', '100000001', perfilLimpio()],
         ['Omar Rojo', '100000002', perfilOportunista()],
@@ -351,10 +413,9 @@ const server = http.createServer(async (req, res) => {
         ['Ana Apurada', '100000005', perfilInvalido()]
       ];
       for (const [nombre, doc, rr] of casos) {
-        db.aplicaciones.push({ id: id(10), empresaId, candidato: { nombre, documento: doc, vacante: 'Auxiliar operativo' }, fecha: new Date().toISOString(), respuestas: rr.r, tiempos: rr.t, resultado: puntuar(rr.r, rr.t) });
+        await store.guardarAplicacion({ id: id(10), empresaId, candidato: { nombre, documento: doc, vacante: 'Auxiliar operativo' }, fecha: new Date().toISOString(), respuestas: rr.r, tiempos: rr.t, resultado: puntuar(rr.r, rr.t) });
       }
-      saveDB(db);
-      return json(res, 201, { empresaId, clave, aviso: 'Empresa demo creada con 5 candidatos de ejemplo.' });
+      return json(res, 201, { empresaId, email, clave, aviso: 'Empresa demo creada con 5 candidatos de ejemplo. Usuario: ' + email });
     }
 
     json(res, 404, { error: 'Ruta no encontrada' });
@@ -390,4 +451,6 @@ function perfilInvalido() {
   return { r, t: { A: 8000, B: 20000, C: 5000, D: 9000, E: 3000, F: 4000 } };
 }
 
-server.listen(PORT, () => console.log(`IRRT v1.0 escuchando en http://localhost:${PORT}`));
+store.init()
+  .then(() => server.listen(PORT, () => console.log(`IRRT v1.1 escuchando en http://localhost:${PORT}`)))
+  .catch(e => { console.error('Error inicializando almacenamiento:', e.message); process.exit(1); });
