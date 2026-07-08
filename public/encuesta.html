@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Encuesta de compatibilidad laboral</title>
+<style>
+  :root{--azul:#00C3FF;--azultx:#0092C8;--verde:#1D976C;--gris:#565656;--negro:#2b2b2b;--fondo:#F4F6F8;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Montserrat','Segoe UI',Arial,sans-serif;background:var(--fondo);color:var(--negro);line-height:1.45}
+  .wrap{max-width:640px;margin:0 auto;padding:16px 16px 90px}
+  header{padding:14px 0 6px}
+  header .marca{font-weight:800;color:var(--azultx);font-size:14px;letter-spacing:.5px}
+  h1{font-size:21px;margin:8px 0 4px}
+  h2{font-size:17px;margin:4px 0 10px}
+  .sub{color:var(--gris);font-size:13.5px}
+  .barra{height:8px;background:#e3e8ec;border-radius:99px;margin:14px 0 18px;overflow:hidden}
+  .barra i{display:block;height:100%;width:0;background:var(--azul);border-radius:99px;transition:width .3s}
+  .card{background:#fff;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(20,40,60,.08)}
+  .pregunta{font-weight:700;font-size:15px;margin-bottom:10px}
+  .instr{background:#E5F8FF;border-radius:10px;padding:12px;font-size:13.5px;color:#155;margin-bottom:14px;font-style:italic}
+  .op{display:block;width:100%;text-align:left;border:2px solid #e3e8ec;background:#fff;border-radius:10px;padding:12px;margin-bottom:8px;font-size:14.5px;font-family:inherit;cursor:pointer;color:var(--negro)}
+  .op.sel{border-color:var(--azul);background:#E5F8FF;font-weight:600}
+  .op.selmas{border-color:var(--verde);background:#E8F5F0;font-weight:600}
+  .op.selmenos{border-color:#C0392B;background:#FDECE9;font-weight:600}
+  .likert{display:flex;gap:6px}
+  .likert .op{flex:1;text-align:center;padding:10px 4px;font-size:13px;margin-bottom:0}
+  .etiquetas{display:flex;justify-content:space-between;font-size:11px;color:var(--gris);margin:4px 2px 0}
+  .fila-mm{display:flex;gap:8px;font-size:12px;color:var(--gris);margin-bottom:6px;font-weight:700}
+  .fila-mm span:first-child{color:var(--verde)} .fila-mm span:last-child{color:#C0392B}
+  .nav{position:fixed;left:0;right:0;bottom:0;background:#fff;box-shadow:0 -2px 10px rgba(0,0,0,.07);padding:12px 16px}
+  .nav .in{max-width:640px;margin:0 auto;display:flex;gap:10px}
+  button.btn{flex:1;padding:14px;border:none;border-radius:12px;font-size:15.5px;font-weight:700;font-family:inherit;cursor:pointer}
+  .btn-sec{background:#e8ecef;color:var(--gris)}
+  .btn-pri{background:var(--azul);color:#fff}
+  .btn-pri:disabled{background:#bfe9f7;cursor:not-allowed}
+  input[type=text]{width:100%;border:2px solid #e3e8ec;border-radius:10px;padding:12px;font-size:15px;font-family:inherit;margin-bottom:10px}
+  label.chk{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--gris);margin-top:8px}
+  .fin{text-align:center;padding:50px 10px}
+  .fin .ico{font-size:52px}
+  .err{color:#C0392B;font-size:13px;margin-top:6px;display:none}
+  .empleo-tag{display:inline-block;background:var(--azultx);color:#fff;font-size:12px;font-weight:700;border-radius:99px;padding:4px 12px;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="marca">PeakU × Vilü</div>
+    <div id="empresaNombre" class="sub"></div>
+  </header>
+  <div class="barra"><i id="prog"></i></div>
+  <div id="app"></div>
+</div>
+<div class="nav"><div class="in">
+  <button class="btn btn-sec" id="atras" style="display:none">Atrás</button>
+  <button class="btn btn-pri" id="sig" disabled>Continuar</button>
+</div></div>
+
+<script>
+(function(){
+'use strict';
+const empresaId = location.pathname.split('/').pop();
+let CAT=null, paso=0, pasos=[], R={}, T={}, tInicio=0, bloqueActual=null;
+const $=s=>document.querySelector(s);
+const app=$('#app'), btnSig=$('#sig'), btnAtras=$('#atras');
+
+fetch('/api/empresa-publica/'+empresaId).then(r=>r.json()).then(d=>{
+  if(d.error){ app.innerHTML='<div class="card"><b>'+d.error+'</b><p class="sub">Pide a la empresa un enlace nuevo.</p></div>'; $('.nav').style.display='none'; return; }
+  $('#empresaNombre').textContent='Proceso de selección · '+d.nombre;
+  fetch('/api/catalogo').then(r=>r.json()).then(c=>{ CAT=c; construirPasos(); render(); });
+});
+
+function construirPasos(){
+  pasos=[{tipo:'intro'},{tipo:'datos'}];
+  pasos.push({tipo:'nEmpleos', bloque:'A'});
+  // los pasos de empleos se insertan dinámicamente al responder nEmpleos
+  CAT.B.items.forEach(it=>pasos.push({tipo:'b', it, bloque:'B'}));
+  CAT.C.items.forEach(it=>pasos.push({tipo:'c', it, bloque:'C'}));
+  pasos.push({tipo:'likertGrupo', items:CAT.D.items, titulo:CAT.D.titulo, instr:CAT.D.instruccion, bloque:'D'});
+  pasos.push({tipo:'likertGrupo', items:CAT.E1.items, titulo:CAT.E1.titulo, bloque:'E'});
+  CAT.F.items.forEach(it=>pasos.push({tipo:'simple', it, titulo:CAT.F.titulo, bloque:'F'}));
+  pasos.push({tipo:'likertGrupo', items:[CAT.E2.items[0]], titulo:CAT.E2.titulo, bloque:'E'});
+  pasos.push({tipo:'simple', it:CAT.E2.items[1], titulo:CAT.E2.titulo, bloque:'E'});
+  pasos.push({tipo:'fin'});
+}
+
+function marcarTiempo(nuevoBloque){
+  const ahora=Date.now();
+  if(bloqueActual && tInicio){ T[bloqueActual]=(T[bloqueActual]||0)+(ahora-tInicio); }
+  bloqueActual=nuevoBloque||null; tInicio=ahora;
+}
+
+function render(){
+  const p=pasos[paso];
+  marcarTiempo(p.bloque);
+  $('#prog').style.width=Math.round(paso/(pasos.length-1)*100)+'%';
+  btnAtras.style.display=paso>0&&p.tipo!=='fin'?'block':'none';
+  btnSig.disabled=true; btnSig.textContent=p.tipo==='fin'?'':'Continuar';
+  if(p.tipo==='intro') return rIntro();
+  if(p.tipo==='datos') return rDatos();
+  if(p.tipo==='nEmpleos') return rNEmpleos();
+  if(p.tipo==='empleo') return rEmpleo(p);
+  if(p.tipo==='b') return rSimple(p.it, CAT.B.titulo, CAT.B.instruccion, 'b');
+  if(p.tipo==='c') return rForzada(p.it);
+  if(p.tipo==='likertGrupo') return rLikertGrupo(p);
+  if(p.tipo==='simple') return rSimple(p.it, p.titulo, null, 'simple');
+  if(p.tipo==='fin') return enviar();
+}
+
+function rIntro(){
+  app.innerHTML=`<div class="card"><h1>${CAT.intro.titulo}</h1>
+  <p class="sub" style="margin:10px 0">${CAT.intro.texto}</p>
+  <label class="chk"><input type="checkbox" id="consent"> ${CAT.intro.consentimiento}</label></div>`;
+  $('#consent').onchange=e=>{ R._consent=e.target.checked; btnSig.disabled=!e.target.checked; };
+  if(R._consent){ $('#consent').checked=true; btnSig.disabled=false; }
+}
+
+function rDatos(){
+  app.innerHTML=`<div class="card"><h2>Tus datos</h2>
+  <input type="text" id="nom" placeholder="Nombre completo" value="${R._nombre||''}">
+  <input type="text" id="doc" placeholder="Número de documento" value="${R._documento||''}">
+  <input type="text" id="vac" placeholder="Cargo al que aplicas (opcional)" value="${R._vacante||''}"></div>`;
+  const check=()=>{ R._nombre=$('#nom').value.trim(); R._documento=$('#doc').value.trim(); R._vacante=$('#vac').value.trim();
+    btnSig.disabled=!(R._nombre.length>4 && R._documento.length>4); };
+  ['nom','doc','vac'].forEach(i=>$('#'+i).oninput=check); check();
+}
+
+function rNEmpleos(){
+  const q=CAT.A.nEmpleos;
+  app.innerHTML=`<div class="card"><h2>${CAT.A.titulo}</h2><p class="pregunta">${q.texto}</p><div id="ops"></div></div>`;
+  q.opciones.forEach((o,i)=>{
+    const b=document.createElement('button'); b.className='op'+(R.nEmpleos===i?' sel':''); b.textContent=o;
+    b.onclick=()=>{ R.nEmpleos=i; ajustarEmpleos(i===3?3:i); render(); btnSig.disabled=false; };
+    $('#ops').appendChild(b);
+  });
+  if(R.nEmpleos!=null) btnSig.disabled=false;
+}
+
+function ajustarEmpleos(n){
+  pasos=pasos.filter(p=>p.tipo!=='empleo');
+  if(!R.empleos) R.empleos=[];
+  R.empleos=R.empleos.slice(0,n);
+  const idx=pasos.findIndex(p=>p.tipo==='nEmpleos');
+  const nuevos=[];
+  for(let k=0;k<n;k++) nuevos.push({tipo:'empleo', k, bloque:'A'});
+  pasos.splice(idx+1,0,...nuevos);
+}
+
+function rEmpleo(p){
+  const k=p.k; if(!R.empleos[k]) R.empleos[k]={};
+  const e=R.empleos[k];
+  const nombres=['Tu empleo más reciente','El empleo anterior a ese','El empleo anterior (tercero)'];
+  let html=`<div class="empleo-tag">${nombres[k]}</div>`;
+  CAT.A.porEmpleo.forEach(q=>{
+    const oculta = q.condicional && !(e.a3===4||e.a3===5);
+    if(oculta){ delete e[q.id]; return; }
+    html+=`<div class="card"><p class="pregunta">${q.texto}</p><div data-q="${q.id}">`+
+      q.opciones.map((o,i)=>`<button class="op ${e[q.id]===i?'sel':''}" data-i="${i}">${o}</button>`).join('')+`</div></div>`;
+  });
+  app.innerHTML=html;
+  app.querySelectorAll('[data-q]').forEach(box=>{
+    box.querySelectorAll('.op').forEach(b=>b.onclick=()=>{ e[box.dataset.q]=+b.dataset.i; rEmpleo(p); });
+  });
+  const req=CAT.A.porEmpleo.filter(q=>!(q.condicional && !(e.a3===4||e.a3===5))).map(q=>q.id);
+  btnSig.disabled=!req.every(id=>e[id]!=null);
+}
+
+function rSimple(it, titulo, instr, _cls){
+  let html=`<h2>${titulo}</h2>`;
+  if(instr) html+=`<div class="instr">${instr}</div>`;
+  html+=`<div class="card"><p class="pregunta">${it.texto||''}</p><div id="ops"></div></div>`;
+  app.innerHTML=html;
+  (it.opciones||[]).forEach((o,i)=>{
+    const b=document.createElement('button'); b.className='op'+(R[it.id]===i?' sel':''); b.textContent=o;
+    b.onclick=()=>{ R[it.id]=i; render(); btnSig.disabled=false; };
+    $('#ops').appendChild(b);
+  });
+  if(R[it.id]!=null) btnSig.disabled=false;
+}
+
+function rForzada(it){
+  const mas=it.id+'mas', menos=it.id+'menos';
+  app.innerHTML=`<h2>${CAT.C.titulo}</h2><div class="instr">${CAT.C.instruccion}</div>
+  <div class="card"><div class="fila-mm"><span>✓ Toca una vez = MÁS te describe</span><span>✗ Dos veces = MENOS</span></div><div id="ops"></div></div>`;
+  it.opciones.forEach((o,i)=>{
+    const b=document.createElement('button');
+    b.className='op'+(R[mas]===i?' selmas':R[menos]===i?' selmenos':'');
+    b.innerHTML=(R[mas]===i?'✓ ':R[menos]===i?'✗ ':'')+o;
+    b.onclick=()=>{
+      if(R[mas]===i){ delete R[mas]; R[menos]=i; }
+      else if(R[menos]===i){ delete R[menos]; }
+      else if(R[mas]==null){ R[mas]=i; }
+      else if(R[menos]==null && R[mas]!==i){ R[menos]=i; }
+      else { R[mas]=i; }
+      if(R[mas]===R[menos]) delete R[menos];
+      rForzada(it);
+    };
+    $('#ops').appendChild(b);
+  });
+  btnSig.disabled=!(R[mas]!=null && R[menos]!=null);
+}
+
+function rLikertGrupo(p){
+  let html=`<h2>${p.titulo}</h2>`;
+  if(p.instr) html+=`<div class="instr">${p.instr}</div>`;
+  p.items.forEach(it=>{
+    if(it.opciones){ // e3 dentro de grupo E2 se maneja como simple aparte
+      return;
+    }
+    html+=`<div class="card"><p class="pregunta">${it.texto}</p><div class="likert" data-q="${it.id}">`+
+      [1,2,3,4,5].map(v=>`<button class="op ${R[it.id]===v-1?'sel':''}" data-i="${v-1}">${v}</button>`).join('')+
+      `</div><div class="etiquetas"><span>Nada de acuerdo</span><span>Totalmente</span></div></div>`;
+  });
+  app.innerHTML=html;
+  app.querySelectorAll('[data-q]').forEach(box=>{
+    box.querySelectorAll('.op').forEach(b=>b.onclick=()=>{ R[box.dataset.q]=+b.dataset.i; rLikertGrupo(p); });
+  });
+  btnSig.disabled=!p.items.filter(i=>!i.opciones).every(i=>R[i.id]!=null);
+}
+
+function enviar(){
+  marcarTiempo(null);
+  $('.nav').style.display='none';
+  app.innerHTML='<div class="fin"><div class="ico">⏳</div><h2>Enviando tus respuestas…</h2></div>';
+  const payload={ empresaId, consentimiento:!!R._consent,
+    candidato:{nombre:R._nombre, documento:R._documento, vacante:R._vacante},
+    respuestas:(()=>{ const c={...R}; delete c._consent; delete c._nombre; delete c._documento; delete c._vacante; return c; })(),
+    tiempos:T };
+  fetch('/api/aplicaciones',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(r=>r.json()).then(d=>{
+      app.innerHTML = d.ok
+        ? '<div class="fin"><div class="ico">✅</div><h2>¡Listo, '+ (R._nombre||'').split(' ')[0] +'!</h2><p class="sub" style="margin-top:8px">'+d.mensaje+'</p></div>'
+        : '<div class="fin"><div class="ico">⚠️</div><h2>No se pudo enviar</h2><p class="sub">'+(d.error||'Intenta de nuevo.')+'</p></div>';
+    }).catch(()=>{ app.innerHTML='<div class="fin"><div class="ico">⚠️</div><h2>Sin conexión</h2><p class="sub">Revisa tu internet e intenta de nuevo.</p></div>'; });
+}
+
+btnSig.onclick=()=>{ if(paso<pasos.length-1){ paso++; render(); window.scrollTo(0,0);} };
+btnAtras.onclick=()=>{ if(paso>0){ paso--; render(); window.scrollTo(0,0);} };
+})();
+</script>
+</body>
+</html>

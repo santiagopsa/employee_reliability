@@ -1,0 +1,10 @@
+{
+  "name": "irrt-app",
+  "version": "1.0.0",
+  "description": "IRRT v1.0 - Instrumento de Riesgo de Rotación Temprana (PeakU × Vilü)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": { "node": ">=18" }
+}

@@ -1,0 +1,17 @@
+# Render Blueprint — IRRT v1.0 (PeakU × Vilü)
+# En Render: New → Blueprint → conectar este repo, o crear Web Service manual con estos valores.
+services:
+  - type: web
+    name: irrt-app
+    runtime: node
+    plan: free            # cambiar a starter + disk para persistencia real
+    buildCommand: ""      # sin dependencias: no hay build
+    startCommand: node server.js
+    envVars:
+      - key: DATA_DIR
+        value: ./data     # con Persistent Disk: cambiar a /data y montar el disco ahí
+    # Para producción con datos persistentes, descomentar (requiere plan pago):
+    # disk:
+    #   name: irrt-data
+    #   mountPath: /data
+    #   sizeGB: 1

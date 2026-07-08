@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IRRT · Panel de empresas — PeakU × Vilü</title>
+<style>
+  :root{--azul:#00C3FF;--azultx:#0092C8;--verde:#1D976C;--gris:#565656;--negro:#2b2b2b;--fondo:#F4F6F8;--coral:#C0392B;--amar:#B8860B;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Montserrat','Segoe UI',Arial,sans-serif;background:var(--fondo);color:var(--negro);line-height:1.45}
+  .wrap{max-width:980px;margin:0 auto;padding:20px 16px 60px}
+  header{display:flex;justify-content:space-between;align-items:center;padding:6px 0 18px}
+  .marca{font-weight:800;color:var(--azultx);font-size:16px}
+  .marca small{display:block;font-weight:400;color:var(--gris);font-size:11.5px}
+  h1{font-size:24px;margin-bottom:6px} h2{font-size:18px;margin-bottom:10px}
+  .sub{color:var(--gris);font-size:13.5px}
+  .card{background:#fff;border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(20,40,60,.08)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:720px){.grid2{grid-template-columns:1fr}}
+  input{width:100%;border:2px solid #e3e8ec;border-radius:10px;padding:11px;font-size:14.5px;font-family:inherit;margin-bottom:10px}
+  button{border:none;border-radius:10px;padding:12px 18px;font-size:14.5px;font-weight:700;font-family:inherit;cursor:pointer}
+  .btn-pri{background:var(--azul);color:#fff} .btn-verde{background:var(--verde);color:#fff}
+  .btn-sec{background:#e8ecef;color:var(--gris)} .btn-link{background:none;color:var(--azultx);padding:4px}
+  .aviso{background:#FFF7DF;border-radius:10px;padding:12px;font-size:13px;margin:10px 0}
+  .credencial{background:#E8F5F0;border-radius:10px;padding:14px;font-size:14px;margin:10px 0;word-break:break-all}
+  .credencial b{font-family:monospace;font-size:15px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;color:var(--gris);font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;border-bottom:2px solid #e3e8ec}
+  td{padding:10px;border-bottom:1px solid #eef1f3;vertical-align:top}
+  tr.fila:hover{background:#F7FBFD;cursor:pointer}
+  .sem{display:inline-block;padding:4px 10px;border-radius:99px;font-size:11.5px;font-weight:800;color:#fff;white-space:nowrap}
+  .s-VERDE{background:var(--verde)} .s-VERDE-OBSERVACIÓN{background:#6BA84F}
+  .s-AMARILLO-P{background:var(--amar)} .s-AMARILLO-V{background:#D98E04}
+  .s-ROJO{background:var(--coral)} .s-NO-INTERPRETABLE{background:#8A8F94}
+  .score{font-weight:800;font-size:16px}
+  .modal{position:fixed;inset:0;background:rgba(20,30,40,.5);display:none;align-items:flex-start;justify-content:center;padding:30px 14px;overflow:auto;z-index:50}
+  .modal.on{display:flex}
+  .modal .box{background:#fff;border-radius:16px;max-width:640px;width:100%;padding:24px}
+  .kv{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eef1f3;font-size:13.5px}
+  .kv b{text-align:right}
+  .compbar{height:10px;background:#e3e8ec;border-radius:99px;overflow:hidden;margin-top:3px}
+  .compbar i{display:block;height:100%;background:var(--azultx)}
+  .accion{background:#E5F8FF;border-radius:10px;padding:12px;font-size:13.5px;margin-top:12px}
+  .flag{background:#FDECE9;border-radius:8px;padding:8px 10px;font-size:12.5px;margin-top:6px;color:var(--coral)}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  select{border:2px solid #e3e8ec;border-radius:10px;padding:10px;font-family:inherit;font-size:13.5px}
+  .linkbox{display:flex;gap:8px}
+  .linkbox input{margin:0}
+  .oculto{display:none}
+  footer{color:#9aa1a7;font-size:11.5px;text-align:center;margin-top:30px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="marca">PeakU × Vilü<small>IRRT v1.0 · Instrumento de Riesgo de Rotación Temprana</small></div>
+    <button class="btn-link oculto" id="btnSalir">Cerrar sesión</button>
+  </header>
+
+  <!-- ========== VISTA PÚBLICA ========== -->
+  <div id="vPublica">
+    <div class="card">
+      <h1>Filtra la rotación antes de contratar</h1>
+      <p class="sub">Registra tu empresa, comparte el enlace de la encuesta con tus candidatos (12 minutos desde su celular) y ve aquí su semáforo de riesgo: verde, amarillo-precarizado, amarillo-victimizado o rojo. La puntuación se calcula en el servidor con el modelo IRRT v1.0 — el candidato nunca ve la clave.</p>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h2>Registrar mi empresa</h2>
+        <input id="regNombre" placeholder="Nombre de la empresa">
+        <input id="regEmail" placeholder="Email de contacto">
+        <button class="btn-pri" id="btnReg">Crear cuenta</button>
+        <div id="regOut"></div>
+      </div>
+      <div class="card">
+        <h2>Ya tengo cuenta</h2>
+        <input id="logId" placeholder="ID de empresa">
+        <input id="logClave" placeholder="Clave de acceso">
+        <button class="btn-verde" id="btnLog">Entrar al panel</button>
+        <div id="logOut"></div>
+        <p class="sub" style="margin-top:14px">¿Solo quieres probar? <button class="btn-link" id="btnDemo">Crear empresa demo con 5 candidatos de ejemplo</button></p>
+        <div id="demoOut"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== PANEL ========== -->
+  <div id="vPanel" class="oculto">
+    <div class="card">
+      <h1 id="panNombre"></h1>
+      <p class="sub">Enlace de encuesta para tus candidatos — compártelo por WhatsApp o email:</p>
+      <div class="linkbox" style="margin-top:8px">
+        <input id="panLink" readonly>
+        <button class="btn-pri" id="btnCopiar">Copiar</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="toolbar">
+        <h2 style="margin:0;flex:1">Candidatos (<span id="panTotal">0</span>)</h2>
+        <select id="fSem">
+          <option value="">Todos los semáforos</option>
+          <option>VERDE</option><option>VERDE-OBSERVACIÓN</option>
+          <option>AMARILLO-P</option><option>AMARILLO-V</option>
+          <option>ROJO</option><option>NO INTERPRETABLE</option>
+        </select>
+        <button class="btn-sec" id="btnRefrescar">Refrescar</button>
+        <button class="btn-sec" id="btnCSV">Exportar CSV</button>
+      </div>
+      <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th>Fecha</th><th>Candidato</th><th>Vacante</th><th>Índice rojo</th><th>Semáforo</th></tr></thead>
+        <tbody id="panTabla"></tbody>
+      </table>
+      </div>
+      <p class="sub" id="panVacio" style="padding:14px 4px">Aún no hay respuestas. Comparte el enlace de arriba con tus candidatos.</p>
+    </div>
+    <div class="card" style="font-size:12.5px;color:var(--gris)">
+      <b>Cómo leer el semáforo.</b> VERDE: avanza directo. VERDE-OBSERVACIÓN: avanza con verificación ligera de referencias. AMARILLO-P (precarizado): historial inestable por causas estructurales — verifica referencias y contrata con onboarding estándar; no lo castigues por el historial. AMARILLO-V (auto-victimizado): patrón de atribución externa — haz la entrevista dirigida de agencia antes de decidir. ROJO: solo avanza con doble confirmación (entrevista estructurada + referencias limpias). NO INTERPRETABLE: la persona respondió para la galería o sin leer — repite en sitio; no cuenta como rojo. <b>Ningún candidato debe rechazarse por el puntaje solo: la decisión final es siempre humana.</b>
+    </div>
+  </div>
+
+  <footer>IRRT v1.0 · Estudio “¿Por qué no llegan?” (n=163, Colombia 2026) · Umbrales provisionales: requieren calibración con resultados reales · Los datos del candidato se tratan bajo Ley 1581 de 2012</footer>
+</div>
+
+<!-- ========== MODAL DETALLE ========== -->
+<div class="modal" id="modal">
+  <div class="box">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div><h2 id="mNombre"></h2><p class="sub" id="mMeta"></p></div>
+      <button class="btn-sec" id="mCerrar">✕</button>
+    </div>
+    <div style="display:flex;gap:14px;align-items:center;margin:14px 0">
+      <div class="score" style="font-size:34px" id="mScore"></div>
+      <span class="sem" id="mSem"></span>
+    </div>
+    <div id="mComps"></div>
+    <div id="mDetalle"></div>
+    <div class="accion" id="mAccion"></div>
+    <div id="mFlags"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+let sesion=null, datos=[];
+
+function api(ruta, opts={}){
+  opts.headers=Object.assign({'Content-Type':'application/json'}, opts.headers||{});
+  if(sesion){ opts.headers['x-empresa-id']=sesion.empresaId; opts.headers['x-clave']=sesion.clave; }
+  return fetch(ruta,opts).then(r=>r.json());
+}
+
+/* ---------- registro / login / demo ---------- */
+$('#btnReg').onclick=()=>{
+  api('/api/empresas',{method:'POST',body:JSON.stringify({nombre:$('#regNombre').value,email:$('#regEmail').value})})
+  .then(d=>{
+    $('#regOut').innerHTML = d.error ? '<div class="aviso">'+d.error+'</div>'
+      : '<div class="credencial">✅ Empresa creada.<br>ID: <b>'+d.empresaId+'</b><br>Clave: <b>'+d.clave+'</b><div class="aviso" style="margin:8px 0 0">Guarda estos datos: la clave solo se muestra una vez.</div></div>';
+    if(!d.error){ $('#logId').value=d.empresaId; $('#logClave').value=d.clave; }
+  });
+};
+$('#btnDemo').onclick=()=>{
+  api('/api/demo',{method:'POST',body:JSON.stringify({})}).then(d=>{
+    $('#demoOut').innerHTML='<div class="credencial">🧪 Demo lista.<br>ID: <b>'+d.empresaId+'</b><br>Clave: <b>'+d.clave+'</b></div>';
+    $('#logId').value=d.empresaId; $('#logClave').value=d.clave;
+  });
+};
+$('#btnLog').onclick=()=>{
+  const empresaId=$('#logId').value.trim(), clave=$('#logClave').value.trim();
+  api('/api/login',{method:'POST',body:JSON.stringify({empresaId,clave})}).then(d=>{
+    if(d.error){ $('#logOut').innerHTML='<div class="aviso">'+d.error+'</div>'; return; }
+    sesion={empresaId,clave,nombre:d.nombre};
+    sessionStorage.setItem('irrt', JSON.stringify(sesion));
+    abrirPanel();
+  });
+};
+$('#btnSalir').onclick=()=>{ sesion=null; sessionStorage.removeItem('irrt'); location.reload(); };
+
+/* ---------- panel ---------- */
+function abrirPanel(){
+  $('#vPublica').classList.add('oculto'); $('#vPanel').classList.remove('oculto'); $('#btnSalir').classList.remove('oculto');
+  $('#panNombre').textContent=sesion.nombre;
+  $('#panLink').value=location.origin+'/encuesta/'+sesion.empresaId;
+  cargar();
+}
+function cargar(){
+  api('/api/resultados').then(d=>{
+    if(d.error){ alert(d.error); return; }
+    datos=d.resultados; pintar();
+  });
+}
+function pintar(){
+  const f=$('#fSem').value;
+  const lista=datos.filter(a=>!f||a.resultado.semaforo===f);
+  $('#panTotal').textContent=datos.length;
+  $('#panVacio').style.display=lista.length?'none':'block';
+  $('#panTabla').innerHTML=lista.map((a,i)=>`
+    <tr class="fila" data-i="${datos.indexOf(a)}">
+      <td>${a.fecha.slice(0,10)}</td>
+      <td><b>${esc(a.candidato.nombre)}</b><br><span class="sub">${esc(a.candidato.documento)}</span></td>
+      <td>${esc(a.candidato.vacante||'—')}</td>
+      <td class="score">${a.resultado.indiceRojo}</td>
+      <td><span class="sem s-${a.resultado.semaforo.replace(/ /g,'-')}">${a.resultado.semaforo}</span></td>
+    </tr>`).join('');
+  document.querySelectorAll('tr.fila').forEach(tr=>tr.onclick=()=>abrirModal(datos[+tr.dataset.i]));
+}
+$('#fSem').onchange=pintar;
+$('#btnRefrescar').onclick=cargar;
+$('#btnCopiar').onclick=()=>{ navigator.clipboard.writeText($('#panLink').value); $('#btnCopiar').textContent='¡Copiado!'; setTimeout(()=>$('#btnCopiar').textContent='Copiar',1500); };
+
+$('#btnCSV').onclick=()=>{
+  const filas=[['fecha','nombre','documento','vacante','indiceRojo','semaforo','compB','compA','compC','compE','dScore','driverPuente','interpretable','flags','accion']];
+  datos.forEach(a=>{
+    const r=a.resultado;
+    filas.push([a.fecha, a.candidato.nombre, a.candidato.documento, a.candidato.vacante||'', r.indiceRojo, r.semaforo,
+      r.componentes.B, r.componentes.A, r.componentes.C, r.componentes.E, r.detalle.dScore, r.detalle.driverPuente,
+      r.interpretable, (r.flags||[]).join(' | '), r.accion]);
+  });
+  const csv=filas.map(f=>f.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv'}));
+  a.download='resultados_irrt.csv'; a.click();
+};
+
+/* ---------- modal ---------- */
+function abrirModal(a){
+  const r=a.resultado;
+  $('#mNombre').textContent=a.candidato.nombre;
+  $('#mMeta').textContent=(a.candidato.vacante||'Sin vacante')+' · doc '+a.candidato.documento+' · '+a.fecha.slice(0,16).replace('T',' ');
+  $('#mScore').textContent=r.indiceRojo;
+  const sem=$('#mSem'); sem.textContent=r.semaforo; sem.className='sem s-'+r.semaforo.replace(/ /g,'-');
+  $('#mComps').innerHTML=['B · Juicio situacional','A · Historial','C · Driver puente','E · Permanencia'].map((n,i)=>{
+    const k=['B','A','C','E'][i], v=r.componentes[k];
+    return `<div class="kv"><span>${n}</span><b>${v}/100</b></div><div class="compbar"><i style="width:${v}%"></i></div>`;
+  }).join('');
+  const d=r.detalle;
+  $('#mDetalle').innerHTML=`
+    <div class="kv"><span>Salidas voluntarias tempranas</span><b>${d.pctSalidasVoluntariasTempranas}%</b></div>
+    <div class="kv"><span>Terminaciones estructurales</span><b>${d.pctTerminacionesEstructurales}%</b></div>
+    <div class="kv"><span>Puntaje atribución/victimización (D, 6–30)</span><b>${d.dScore}</b></div>
+    <div class="kv"><span>Driver puente (0–4.5)</span><b>${d.driverPuente}</b></div>
+    <div class="kv"><span>Anclas</span><b>${d.sinAnclas?'Sin anclas (×1.15 aplicado)':'Presentes'}</b></div>
+    <div class="kv"><span>Logística</span><b>${d.friccionLogistica}</b></div>
+    <div class="kv"><span>Banderas</span><b>${r.banderas.amarilloP?'Amarilla-P ':''}${r.banderas.amarilloV?'Amarilla-V':''}${(!r.banderas.amarilloP&&!r.banderas.amarilloV)?'—':''}</b></div>`;
+  $('#mAccion').innerHTML='<b>Acción recomendada:</b> '+r.accion;
+  $('#mFlags').innerHTML=(r.flags||[]).map(f=>'<div class="flag">⚑ '+f+'</div>').join('');
+  $('#modal').classList.add('on');
+}
+$('#mCerrar').onclick=()=>$('#modal').classList.remove('on');
+$('#modal').onclick=e=>{ if(e.target.id==='modal') $('#modal').classList.remove('on'); };
+
+function esc(s){ return String(s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+
+/* ---------- restaurar sesión ---------- */
+const guardada=sessionStorage.getItem('irrt');
+if(guardada){ sesion=JSON.parse(guardada); api('/api/login',{method:'POST',body:JSON.stringify(sesion)}).then(d=>{ if(!d.error) abrirPanel(); else sessionStorage.removeItem('irrt'); }); }
+})();
+</script>
+</body>
+</html>
