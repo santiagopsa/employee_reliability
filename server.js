@@ -279,6 +279,7 @@ const server = http.createServer(async (req, res) => {
     /* ---- páginas ---- */
     if (req.method === 'GET' && (p === '/' || p === '/portal')) return servirArchivo(res, 'portal.html', 'text/html');
     if (req.method === 'GET' && p.startsWith('/encuesta/')) return servirArchivo(res, 'encuesta.html', 'text/html');
+    if (req.method === 'GET' && p === '/metodologia') return servirArchivo(res, 'metodologia.html', 'text/html');
 
     /* ---- API pública ---- */
     if (req.method === 'GET' && p === '/api/catalogo') return json(res, 200, CATALOGO);

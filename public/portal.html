@@ -41,7 +41,25 @@
   .compbar{height:10px;background:#e3e8ec;border-radius:99px;overflow:hidden;margin-top:3px}
   .compbar i{display:block;height:100%;background:var(--azultx)}
   .accion{background:#E5F8FF;border-radius:10px;padding:12px;font-size:13.5px;margin-top:12px}
-  .flag{background:#FDECE9;border-radius:8px;padding:8px 10px;font-size:12.5px;margin-top:6px;color:var(--coral)}
+  .flag{background:#FDECE9;border-radius:8px;padding:10px 12px;font-size:12.5px;margin-top:6px}
+  .flag b{color:var(--coral)}
+  .resumen{border-radius:12px;padding:14px;font-size:14px;margin:12px 0;line-height:1.5}
+  .r-verde{background:#E8F5F0} .r-amar{background:#FFF7DF} .r-rojo{background:#FDECE9} .r-gris{background:#eef1f3}
+  .pasos{background:#fff;border:2px solid #E5F8FF;border-radius:12px;padding:14px 14px 6px;margin:12px 0}
+  .pasos h4{font-size:13px;color:var(--azultx);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+  .paso{display:flex;gap:10px;margin-bottom:10px;font-size:13.5px}
+  .paso .n{flex:none;width:22px;height:22px;border-radius:50%;background:var(--azultx);color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center}
+  .comp{padding:10px 0;border-bottom:1px solid #eef1f3}
+  .comp .fila1{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .comp .fila1 b{font-size:13.5px}
+  .comp .desc{font-size:12px;color:var(--gris);margin:2px 0 4px}
+  .nivel{font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;white-space:nowrap}
+  .n-bajo{background:#E8F5F0;color:var(--verde)} .n-medio{background:#FFF7DF;color:#8a6a00} .n-alto{background:#FDECE9;color:var(--coral)}
+  .detrow{padding:9px 0;border-bottom:1px solid #eef1f3}
+  .detrow .fila1{display:flex;justify-content:space-between;gap:10px;font-size:13.5px}
+  .detrow .desc{font-size:12px;color:var(--gris);margin-top:2px}
+  .score.gris{color:#9aa1a7;text-decoration:line-through}
+  h3.msec{font-size:14px;margin:16px 0 4px;color:var(--negro)}
   .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
   select{border:2px solid #e3e8ec;border-radius:10px;padding:10px;font-family:inherit;font-size:13.5px}
   .linkbox{display:flex;gap:8px}
@@ -62,6 +80,7 @@
     <div class="card">
       <h1>Filtra la rotación antes de contratar</h1>
       <p class="sub">Registra tu empresa, comparte el enlace de la encuesta con tus candidatos (12 minutos desde su celular) y ve aquí su semáforo de riesgo: verde, amarillo-precarizado, amarillo-victimizado o rojo. La puntuación se calcula en el servidor con el modelo IRRT v1.0 — el candidato nunca ve la clave.</p>
+      <p style="margin-top:10px"><a href="/metodologia" style="color:var(--azultx);font-weight:700;font-size:13.5px;text-decoration:none">📄 Conoce la metodología y la evidencia detrás del IRRT v1.0 →</a></p>
     </div>
     <div class="grid2">
       <div class="card">
@@ -115,6 +134,7 @@
     </div>
     <div class="card" style="font-size:12.5px;color:var(--gris)">
       <b>Cómo leer el semáforo.</b> VERDE: avanza directo. VERDE-OBSERVACIÓN: avanza con verificación ligera de referencias. AMARILLO-P (precarizado): historial inestable por causas estructurales — verifica referencias y contrata con onboarding estándar; no lo castigues por el historial. AMARILLO-V (auto-victimizado): patrón de atribución externa — haz la entrevista dirigida de agencia antes de decidir. ROJO: solo avanza con doble confirmación (entrevista estructurada + referencias limpias). NO INTERPRETABLE: la persona respondió para la galería o sin leer — repite en sitio; no cuenta como rojo. <b>Ningún candidato debe rechazarse por el puntaje solo: la decisión final es siempre humana.</b>
+      <p style="margin-top:10px"><a href="/metodologia" target="_blank" style="color:var(--azultx);font-weight:700;text-decoration:none">📄 ¿En qué se basa esta prueba? Metodología y evidencia del IRRT v1.0 →</a></p>
     </div>
   </div>
 
@@ -128,14 +148,19 @@
       <div><h2 id="mNombre"></h2><p class="sub" id="mMeta"></p></div>
       <button class="btn-sec" id="mCerrar">✕</button>
     </div>
-    <div style="display:flex;gap:14px;align-items:center;margin:14px 0">
+    <div style="display:flex;gap:14px;align-items:center;margin:14px 0 4px">
       <div class="score" style="font-size:34px" id="mScore"></div>
       <span class="sem" id="mSem"></span>
     </div>
-    <div id="mComps"></div>
-    <div id="mDetalle"></div>
-    <div class="accion" id="mAccion"></div>
+    <p class="sub" id="mScoreNota"></p>
+    <div id="mResumen" class="resumen"></div>
+    <div class="pasos" id="mPasosBox"><h4>Qué hacer ahora y por qué</h4><div id="mPasos"></div></div>
     <div id="mFlags"></div>
+    <h3 class="msec">Las 4 señales que medimos</h3>
+    <p class="sub" style="margin-bottom:4px">Cada una va de 0 (sin riesgo) a 100 (riesgo alto). El puntaje total las combina.</p>
+    <div id="mComps"></div>
+    <h3 class="msec">Detalles que explican el resultado</h3>
+    <div id="mDetalle"></div>
   </div>
 </div>
 
@@ -223,28 +248,68 @@ $('#btnCSV').onclick=()=>{
   a.download='resultados_irrt.csv'; a.click();
 };
 
+/* ---------- interpretación en lenguaje llano ---------- */
+const INTERP={
+ 'VERDE':{clase:'r-verde',resumen:'<b>Perfil confiable.</b> Sus respuestas son coherentes y no muestran señales de rotación voluntaria: no eligió opciones de riesgo en los dilemas, su historial no tiene renuncias impulsivas y sus prioridades apuntan a quedarse.',
+  pasos:[['Avanza con el proceso normal','El instrumento no encontró nada que frene la contratación.'],['Haz la verificación estándar de referencias','No porque haya sospecha: es el control de calidad de todo proceso.']]},
+ 'VERDE-OBSERVACIÓN':{clase:'r-verde',resumen:'<b>Perfil aceptable con señales leves.</b> Acumuló algunos puntos de riesgo, pero ninguno concluyente. La mayoría de candidatos en esta zona resultan buenos empleados.',
+  pasos:[['Avanza, pero llama sus referencias','Pregunta específicamente por asistencia y puntualidad (no por desempeño): las señales leves que sumó vienen de ahí.'],['En la entrevista, pregunta por qué quiere ESTE trabajo','Si la respuesta es solo "necesito ingresos", revisa la señal de "empleo de paso" más abajo.']]},
+ 'AMARILLO-P':{clase:'r-amar',resumen:'<b>Historial inestable, pero NO por su culpa.</b> Sus empleos terminaron por causas externas comprobables: contratos que se acabaron, empresas que cerraron o recortaron. Eso es el mercado, no una conducta del candidato. Rechazarlo por su historial sería perder talento bueno.',
+  pasos:[['Llama sus referencias y confirma fechas y causas de salida','Si confirman que fueron fin de contrato o cierres, el historial corto deja de ser una alerta.'],['Si las referencias cuadran, contrata con tranquilidad','Este perfil responde muy bien cuando la oferta es honesta y el pago es puntual.'],['No le preguntes "¿por qué tan poco tiempo en cada trabajo?" en tono de reproche','Ya sabemos la respuesta: era estructural. Úsalo para generar confianza, no para incomodar.']]},
+ 'AMARILLO-V':{clase:'r-amar',resumen:'<b>Patrón de "la culpa siempre es de otros".</b> En sus respuestas, todos sus problemas laborales fueron causados por jefes o empresas, y no reconoce ninguna salida que pudo manejar mejor. Este patrón se asocia a conflictos repetidos y renuncias rápidas: la persona tiende a revivir el mismo ciclo en cada empleo.',
+  pasos:[['Hazle UNA pregunta clave en entrevista: "¿Cuál salida de un trabajo manejarías distinto hoy?"','Quien tiene autocrítica encuentra al menos un ejemplo. Quien no encuentra ninguno tras dos intentos confirma el patrón.'],['Pide una segunda referencia y pregunta cómo fue la salida','Si su versión y la de la empresa difieren mucho, es la señal más dura.'],['Si decides contratar: expectativas por escrito + seguimiento en los días 3 y 15','Con acuerdos explícitos y un jefe directo claro, este perfil puede funcionar. Sin protocolo, es rotación diferida.']]},
+ 'ROJO':{clase:'r-rojo',resumen:'<b>Acumuló varias señales de rotación voluntaria.</b> Alguna combinación de: eligió mentir en los dilemas (ej. inventar una excusa para faltar), tiene renuncias rápidas y repetidas sin causa externa, busca este empleo como "mientras tanto", o renunciaría apenas algo no le guste. Ninguna señal sola lo condena; la acumulación es lo que pesa.',
+  pasos:[['NO lo rechaces todavía: haz una entrevista estructurada','El puntaje recomienda profundizar, no decidir. Puede haber contexto que el formulario no captura.'],['Llama referencias preguntando SOLO por asistencia y forma de salida','"¿Faltaba? ¿Avisaba? ¿Cómo terminó?" — hechos, no opiniones.'],['Si la entrevista y las referencias también salen mal, no avances','Con doble confirmación, contratar a este perfil en un cargo donde la asistencia es crítica cuesta más que dejar la vacante abierta unos días más.']]},
+ 'NO INTERPRETABLE':{clase:'r-gris',resumen:'<b>El resultado NO es confiable — ojo: esto no significa que sea mal candidato.</b> Significa que respondió para quedar bien, sin leer, o demasiado rápido, y por eso esta medición no sirve para decidir nada. El puntaje que ves arriba está tachado porque no debes usarlo.',
+  pasos:[['No lo cuentes como "rojo" ni lo descartes por esto','Puede ser nervios, afán o dificultad de lectura. El dato inválido no es un dato en contra.'],['Invítalo a repetir la encuesta presencial, con tiempo y acompañamiento','"Queremos conocerte mejor, responde con calma y con la verdad" — la mayoría corrige en el segundo intento.'],['Si no puede repetir, evalúalo por entrevista estructurada','Usa las mismas preguntas de situaciones (dilemas) en persona: funcionan igual conversadas.']]}
+};
+const COMPS_INFO={
+ B:{nombre:'Situaciones de trabajo (dilemas)',desc:'Qué haría en casos reales: faltar por un ingreso extra, mentir para ausentarse, encubrir a un compañero. Alto = eligió las opciones de riesgo.'},
+ A:{nombre:'Historial de salidas',desc:'Renuncias rápidas y sin tener otra oferta en sus últimos empleos. Alto = patrón de abandono por decisión propia.'},
+ C:{nombre:'Empleo de paso ("mientras tanto")',desc:'Si busca este trabajo solo como puente mientras aparece otra cosa. Alto = sus prioridades apuntan a ingreso inmediato y salida fácil.'},
+ E:{nombre:'Umbral de renuncia',desc:'Qué tan rápido se iría si algo no le gusta. Alto = renunciaría pronto ante cualquier inconformidad.'}
+};
+function nivel(v){ return v<40?['Bajo — sin riesgo','n-bajo']:v<70?['Medio — atención','n-medio']:['Alto — riesgo','n-alto']; }
+function flagAmigable(f){
+  if(f.includes('Deseabilidad')) return ['Respondió para quedar bien','Marcó como ciertas frases imposibles (ej. "jamás he dicho una mentira, ni pequeña"). Nadie honesto responde eso: indica que contestó lo que suena bien, no la verdad.'];
+  if(f.includes('atención')) return ['No leyó las preguntas','Una pregunta pedía marcar una opción específica solo para verificar lectura, y la falló.'];
+  if(f.includes('Velocidad')) return ['Respondió demasiado rápido','Terminó bloques en menos tiempo del que toma leerlos. '+f.replace(/.*en (\d+) bloques.*/,'Pasó en $1 bloques.')];
+  if(f.includes('Inconsisten')) return ['Se contradijo','Dio respuestas opuestas en preguntas que miden lo mismo con palabras distintas.'];
+  return ['Alerta de confiabilidad',f];
+}
+
 /* ---------- modal ---------- */
 function abrirModal(a){
-  const r=a.resultado;
+  const r=a.resultado, d=r.detalle;
   $('#mNombre').textContent=a.candidato.nombre;
   $('#mMeta').textContent=(a.candidato.vacante||'Sin vacante')+' · doc '+a.candidato.documento+' · '+a.fecha.slice(0,16).replace('T',' ');
+  const noInterp = r.semaforo==='NO INTERPRETABLE';
   $('#mScore').textContent=r.indiceRojo;
+  $('#mScore').className='score'+(noInterp?' gris':'');
+  $('#mScore').style.fontSize='34px';
+  $('#mScoreNota').textContent = noInterp
+    ? 'Puntaje anulado: las alertas de abajo indican que las respuestas no son confiables.'
+    : 'Puntaje de riesgo de rotación: 0 = sin señales · 100 = máximo riesgo. Se calcula combinando las 4 señales de abajo.';
   const sem=$('#mSem'); sem.textContent=r.semaforo; sem.className='sem s-'+r.semaforo.replace(/ /g,'-');
-  $('#mComps').innerHTML=['B · Juicio situacional','A · Historial','C · Driver puente','E · Permanencia'].map((n,i)=>{
-    const k=['B','A','C','E'][i], v=r.componentes[k];
-    return `<div class="kv"><span>${n}</span><b>${v}/100</b></div><div class="compbar"><i style="width:${v}%"></i></div>`;
+  const it=INTERP[r.semaforo]||INTERP['VERDE'];
+  const res=$('#mResumen'); res.className='resumen '+it.clase; res.innerHTML=it.resumen;
+  $('#mPasos').innerHTML=it.pasos.map((p,i)=>`<div class="paso"><div class="n">${i+1}</div><div><b>${p[0]}.</b> <span class="sub">${p[1]}</span></div></div>`).join('');
+  $('#mFlags').innerHTML=(r.flags||[]).map(f=>{ const [t,e]=flagAmigable(f); return `<div class="flag"><b>⚑ ${t}.</b> ${e}</div>`; }).join('');
+  $('#mComps').innerHTML=['B','A','C','E'].map(k=>{
+    const v=r.componentes[k], [ntxt,ncls]=nivel(v), inf=COMPS_INFO[k];
+    return `<div class="comp"><div class="fila1"><b>${inf.nombre}</b><span class="nivel ${ncls}">${ntxt} · ${v}/100</span></div>
+      <div class="desc">${inf.desc}</div><div class="compbar"><i style="width:${v}%"></i></div></div>`;
   }).join('');
-  const d=r.detalle;
-  $('#mDetalle').innerHTML=`
-    <div class="kv"><span>Salidas voluntarias tempranas</span><b>${d.pctSalidasVoluntariasTempranas}%</b></div>
-    <div class="kv"><span>Terminaciones estructurales</span><b>${d.pctTerminacionesEstructurales}%</b></div>
-    <div class="kv"><span>Puntaje atribución/victimización (D, 6–30)</span><b>${d.dScore}</b></div>
-    <div class="kv"><span>Driver puente (0–4.5)</span><b>${d.driverPuente}</b></div>
-    <div class="kv"><span>Anclas</span><b>${d.sinAnclas?'Sin anclas (×1.15 aplicado)':'Presentes'}</b></div>
-    <div class="kv"><span>Logística</span><b>${d.friccionLogistica}</b></div>
-    <div class="kv"><span>Banderas</span><b>${r.banderas.amarilloP?'Amarilla-P ':''}${r.banderas.amarilloV?'Amarilla-V':''}${(!r.banderas.amarilloP&&!r.banderas.amarilloV)?'—':''}</b></div>`;
-  $('#mAccion').innerHTML='<b>Acción recomendada:</b> '+r.accion;
-  $('#mFlags').innerHTML=(r.flags||[]).map(f=>'<div class="flag">⚑ '+f+'</div>').join('');
+  const detalles=[
+    ['Salidas voluntarias tempranas', d.pctSalidasVoluntariasTempranas+'%', 'De sus últimos empleos, cuántos dejó por decisión propia, rápido y sin tener otra oferta. Es la señal de historial más importante.'],
+    ['Salidas que no fueron su decisión', d.pctTerminacionesEstructurales+'%', 'Fin de contrato, cierre o recorte. Si es alto, su rotación la causó el mercado laboral, no él — y no debe usarse en su contra.'],
+    ['Tendencia a culpar afuera', d.dScore+' de 30', 'Qué tanto atribuye TODOS sus problemas laborales a jefes y empresas, sin reconocer nada propio. De 22 hacia arriba se considera patrón de victimización.'],
+    ['Empleo de paso', d.driverPuente+' de 4.5', 'De 3 hacia arriba: sus motivaciones apuntan a un empleo "mientras tanto", no a quedarse.'],
+    ['Anclas (razones de vida para quedarse)', d.sinAnclas?'Ausentes':'Presentes', d.sinAnclas?'No tiene personas que dependan de su ingreso y el horario le queda difícil: hay menos razones externas que aseguren su asistencia. Por eso su puntaje sube 15%.':'Tiene personas que dependen de su ingreso y/o el horario le funciona. En nuestro estudio, esto se asocia con la mitad de las faltas.'],
+    ['Transporte y logística', d.friccionLogistica==='Normal'?'Sin problema':'Atención', d.friccionLogistica==='Normal'?'Distancia y plan B de transporte razonables.':'Vive a más de 90 minutos o no tiene plan B de transporte. No es una falla del candidato: considera apoyo de ruta o turno compatible, porque las faltas logísticas son de las más comunes.'],
+    ['Banderas', (r.banderas.amarilloP?'Amarilla-P (precarizado) ':'')+(r.banderas.amarilloV?'Amarilla-V (victimización)':'')||'Ninguna', 'Amarilla-P = historial inestable por causas externas: verificar, no castigar. Amarilla-V = patrón de culpar afuera: entrevistar antes de decidir. Ninguna = sin patrones especiales.']
+  ];
+  $('#mDetalle').innerHTML=detalles.map(x=>`<div class="detrow"><div class="fila1"><span>${x[0]}</span><b>${x[1]}</b></div><div class="desc">${x[2]}</div></div>`).join('');
   $('#modal').classList.add('on');
 }
 $('#mCerrar').onclick=()=>$('#modal').classList.remove('on');
