@@ -35,6 +35,23 @@ Nota: el Postgres gratuito de Render expira a los ~30 días (te avisan por email
 - Clave de empresa hasheada (scrypt). Emails únicos.
 - Umbrales calibrables en `CONFIG` (documentados en el manual IRRT, secciones 7 y 10).
 
+## Recuperación de clave (procedimiento admin)
+
+No hay envío de correos todavía, así que el reset lo haces tú:
+
+1. En Render → Environment, define la variable `ADMIN_KEY` con un valor secreto largo (sin ella, el endpoint está deshabilitado).
+2. Cuando una empresa escriba que perdió su clave, ejecuta (PowerShell):
+
+```powershell
+Invoke-RestMethod -Method Post -Uri "https://TU-APP.onrender.com/api/admin/reset-clave" `
+  -Headers @{"x-admin-key"="TU_ADMIN_KEY"} -ContentType "application/json" `
+  -Body '{"email":"correo@delaempresa.com"}'
+```
+
+3. La respuesta trae `claveNueva`: envíasela por un canal directo (verifica antes que quien la pide es dueño del correo). La clave anterior queda invalidada al instante.
+
+En el portal, el login muestra "¿Olvidaste tu clave? Escríbenos" apuntando a hola@peaku.co (cámbialo en portal.html si usas otro correo).
+
 ## Pendientes para producción seria
 
 - Rotar variantes del Bloque B cada 6–12 meses (M8): `CATALOGO.B` + `CLAVE_B`.

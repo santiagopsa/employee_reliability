@@ -251,6 +251,7 @@ class FileStore {
     return Object.values(this.db.empresas).find(e => e.email === email) || null;
   }
   async crearEmpresa(emp) { this.db.empresas[emp.empresaId] = emp; this._save(); }
+  async actualizarEmpresa(emp) { this.db.empresas[emp.empresaId] = emp; this._save(); }
   async guardarAplicacion(app) { this.db.aplicaciones.push(app); this._save(); }
   async aplicacionesDeEmpresa(empresaId) {
     return this.db.aplicaciones.filter(a => a.empresaId === empresaId);
@@ -279,6 +280,9 @@ class PgStore {
   }
   async crearEmpresa(emp) {
     await this.pool.query('INSERT INTO irrt_empresas(id,email,data) VALUES($1,$2,$3)', [emp.empresaId, emp.email, emp]);
+  }
+  async actualizarEmpresa(emp) {
+    await this.pool.query('UPDATE irrt_empresas SET data=$2 WHERE id=$1', [emp.empresaId, emp]);
   }
   async guardarAplicacion(app) {
     await this.pool.query('INSERT INTO irrt_aplicaciones(id,empresa_id,fecha,data) VALUES($1,$2,$3,$4)', [app.id, app.empresaId, app.fecha, app]);
@@ -399,6 +403,21 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === 'GET' && p === '/api/config-publica') {
       return json(res, 200, { cortes: { verde: CONFIG.CORTE_VERDE, rojo: CONFIG.CORTE_ROJO }, limiteGratis: CONFIG.LIMITE_GRATIS, version: 'IRRT v1.1' });
+    }
+
+    /* ---- Admin: resetear clave de una empresa (requiere ADMIN_KEY en variables de entorno) ----
+     * Uso: POST /api/admin/reset-clave con header x-admin-key y body {"email":"empresa@x.com"} */
+    if (req.method === 'POST' && p === '/api/admin/reset-clave') {
+      if (!process.env.ADMIN_KEY) return json(res, 403, { error: 'Reset deshabilitado: define ADMIN_KEY en el servidor.' });
+      if (req.headers['x-admin-key'] !== process.env.ADMIN_KEY) return json(res, 401, { error: 'Clave de administrador incorrecta.' });
+      const b = await leerBody(req);
+      const emp = await store.empresaPorEmail(String(b.email || '').trim().toLowerCase());
+      if (!emp) return json(res, 404, { error: 'No existe una empresa con ese correo.' });
+      const claveNueva = id(10);
+      emp.claveHash = hash(claveNueva);
+      emp.claveReseteada = new Date().toISOString();
+      await store.actualizarEmpresa(emp);
+      return json(res, 200, { ok: true, email: emp.email, nombre: emp.nombre, claveNueva, aviso: 'Entrega esta clave a la empresa por un canal directo. Las sesiones anteriores quedan invalidadas.' });
     }
 
     if (req.method === 'POST' && p === '/api/demo') {
