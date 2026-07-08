@@ -42,6 +42,12 @@
     <div class="out" id="out"></div>
     <div class="aviso"><b>Seguridad:</b> la clave nueva se muestra una sola vez y no queda guardada en esta página. Envíala a la empresa respondiendo al correo registrado (no a quien te escribió, si es distinto). Esta página no funciona si el servidor no tiene ADMIN_KEY configurada.</div>
   </div>
+  <div class="card" style="margin-top:16px">
+    <h1>Estado del sistema</h1>
+    <p class="sub">Consulta en vivo qué almacenamiento está usando el servidor y cuántos registros hay guardados. Usa la misma clave de administrador de arriba.</p>
+    <button id="btnEstado" style="background:var(--verde)">Consultar estado</button>
+    <div class="out" id="outEstado"></div>
+  </div>
   <p style="margin-top:14px;text-align:center"><a class="volver" href="/">← Volver al portal</a></p>
 </div>
 <script>
@@ -63,6 +69,19 @@ btn.onclick=()=>{
       '<p style="margin-top:8px;font-size:12px;color:#565656">'+esc(d.aviso)+'</p>';
     document.querySelector('#copiar').onclick=e=>{ navigator.clipboard.writeText(d.claveNueva); e.target.textContent='¡Copiada!'; };
   }).catch(()=>{ btn.disabled=false; btn.textContent='Generar clave nueva'; out.className='out err'; out.textContent='⚠ Error de conexión.'; });
+};
+document.querySelector('#btnEstado').onclick=()=>{
+  const oe=document.querySelector('#outEstado'); oe.className='out';
+  const k=document.querySelector('#akey').value.trim();
+  if(k.length<4){ oe.className='out err'; oe.textContent='⚠ Escribe primero tu clave de administrador en el campo de arriba.'; return; }
+  fetch('/api/admin/estado',{headers:{'x-admin-key':k}}).then(r=>r.json()).then(d=>{
+    if(d.error){ oe.className='out err'; oe.textContent='⚠ '+d.error; return; }
+    oe.className='out ok';
+    oe.innerHTML='<b>Almacenamiento:</b> '+esc(d.almacenamiento)+(d.persistente?' ✅ (los datos sobreviven deploys)':' ⚠️')+
+      '<br><b>Empresas registradas:</b> '+d.empresas+
+      '<br><b>Evaluaciones guardadas:</b> '+d.aplicaciones+
+      '<br><span style="font-size:11.5px;color:#565656">Consultado: '+esc(d.consultadoEn.replace('T',' ').slice(0,19))+' UTC — cada consulta lee directo de la base.</span>';
+  }).catch(()=>{ oe.className='out err'; oe.textContent='⚠ Error de conexión.'; });
 };
 function esc(s){ return String(s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
 })();

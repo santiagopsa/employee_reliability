@@ -256,6 +256,9 @@ class FileStore {
   async aplicacionesDeEmpresa(empresaId) {
     return this.db.aplicaciones.filter(a => a.empresaId === empresaId);
   }
+  async conteos() {
+    return { empresas: Object.keys(this.db.empresas).length, aplicaciones: this.db.aplicaciones.length };
+  }
 }
 
 class PgStore {
@@ -291,10 +294,16 @@ class PgStore {
     const r = await this.pool.query('SELECT data FROM irrt_aplicaciones WHERE empresa_id=$1', [empresaId]);
     return r.rows.map(x => x.data);
   }
+  async conteos() {
+    const e = await this.pool.query('SELECT COUNT(*)::int AS n FROM irrt_empresas');
+    const a = await this.pool.query('SELECT COUNT(*)::int AS n FROM irrt_aplicaciones');
+    return { empresas: e.rows[0].n, aplicaciones: a.rows[0].n };
+  }
 }
 
+let TIPO_STORE = 'Archivo local (data/db.json) — ¡los datos se borran en cada deploy!';
 if (process.env.DATABASE_URL) {
-  try { store = new PgStore(process.env.DATABASE_URL); console.log('Almacenamiento: Postgres'); }
+  try { store = new PgStore(process.env.DATABASE_URL); TIPO_STORE = 'Postgres'; console.log('Almacenamiento: Postgres'); }
   catch (e) { console.error('No se pudo cargar pg (' + e.message + '); usando archivo local.'); store = new FileStore(); }
 } else {
   store = new FileStore(); console.log('Almacenamiento: archivo local (data/db.json)');
@@ -404,6 +413,18 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === 'GET' && p === '/api/config-publica') {
       return json(res, 200, { cortes: { verde: CONFIG.CORTE_VERDE, rojo: CONFIG.CORTE_ROJO }, limiteGratis: CONFIG.LIMITE_GRATIS, version: 'IRRT v1.1' });
+    }
+
+    /* ---- Admin: estado del sistema (verifica en vivo qué almacenamiento se usa y cuántos registros hay) */
+    if (req.method === 'GET' && p === '/api/admin/estado') {
+      if (!process.env.ADMIN_KEY) return json(res, 403, { error: 'Define ADMIN_KEY en el servidor.' });
+      if (req.headers['x-admin-key'] !== process.env.ADMIN_KEY) return json(res, 401, { error: 'Clave de administrador incorrecta.' });
+      try {
+        const n = await store.conteos();
+        return json(res, 200, { ok: true, almacenamiento: TIPO_STORE, persistente: TIPO_STORE === 'Postgres', empresas: n.empresas, aplicaciones: n.aplicaciones, consultadoEn: new Date().toISOString() });
+      } catch (e) {
+        return json(res, 500, { error: 'La consulta al almacenamiento falló: ' + e.message });
+      }
     }
 
     /* ---- Admin: resetear clave de una empresa (requiere ADMIN_KEY en variables de entorno) ----
