@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin · IRRT — PeakU × Vilü</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root{--azul:#00C3FF;--azultx:#0092C8;--verde:#1D976C;--gris:#565656;--negro:#2b2b2b;--fondo:#F4F6F8;--coral:#C0392B;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Montserrat','Segoe UI',Arial,sans-serif;background:var(--fondo);color:var(--negro);line-height:1.5}
+  .wrap{max-width:520px;margin:0 auto;padding:40px 16px}
+  .marca{font-weight:800;color:var(--azultx);font-size:15px;margin-bottom:18px}
+  .card{background:#fff;border-radius:14px;padding:24px;box-shadow:0 1px 4px rgba(20,40,60,.08)}
+  h1{font-size:20px;margin-bottom:6px}
+  .sub{color:var(--gris);font-size:13px;margin-bottom:16px}
+  label{font-size:12px;font-weight:700;color:var(--gris);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+  input{width:100%;border:2px solid #e3e8ec;border-radius:10px;padding:11px;font-size:14.5px;font-family:inherit;margin-bottom:14px}
+  button{width:100%;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;background:var(--azul);color:#fff}
+  button:disabled{background:#bfe9f7}
+  .out{margin-top:16px;border-radius:10px;padding:14px;font-size:13.5px;display:none}
+  .out.ok{display:block;background:#E8F5F0}
+  .out.err{display:block;background:#FDECE9;color:var(--coral)}
+  .clave{display:flex;gap:8px;align-items:center;margin-top:8px}
+  .clave code{flex:1;background:#fff;border:2px dashed var(--verde);border-radius:8px;padding:10px;font-size:16px;font-weight:700;letter-spacing:.5px}
+  .clave button{width:auto;padding:10px 14px;background:var(--verde)}
+  .aviso{background:#FFF7DF;border-radius:10px;padding:11px 13px;font-size:12px;color:var(--gris);margin-top:16px}
+  a.volver{color:var(--azultx);font-size:12.5px;text-decoration:none;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="marca">PeakU × Vilü · Administración IRRT</div>
+  <div class="card">
+    <h1>Resetear clave de una empresa</h1>
+    <p class="sub">Genera una clave nueva e invalida la anterior al instante. Úsalo solo tras verificar que quien lo pide controla el correo registrado.</p>
+    <label>Tu clave de administrador (ADMIN_KEY)</label>
+    <input type="password" id="akey" placeholder="Clave maestra" autocomplete="off">
+    <label>Correo de la empresa</label>
+    <input type="email" id="email" placeholder="correo@delaempresa.com" autocomplete="off">
+    <button id="btn" disabled>Generar clave nueva</button>
+    <div class="out" id="out"></div>
+    <div class="aviso"><b>Seguridad:</b> la clave nueva se muestra una sola vez y no queda guardada en esta página. Envíala a la empresa respondiendo al correo registrado (no a quien te escribió, si es distinto). Esta página no funciona si el servidor no tiene ADMIN_KEY configurada.</div>
+  </div>
+  <p style="margin-top:14px;text-align:center"><a class="volver" href="/">← Volver al portal</a></p>
+</div>
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const btn=$('#btn'), out=$('#out');
+function check(){ btn.disabled=!($('#akey').value.trim().length>3 && $('#email').value.includes('@')); }
+$('#akey').oninput=check; $('#email').oninput=check;
+btn.onclick=()=>{
+  btn.disabled=true; btn.textContent='Generando…'; out.className='out';
+  fetch('/api/admin/reset-clave',{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':$('#akey').value.trim()},body:JSON.stringify({email:$('#email').value.trim()})})
+  .then(r=>r.json()).then(d=>{
+    btn.disabled=false; btn.textContent='Generar clave nueva';
+    if(d.error){ out.className='out err'; out.textContent='⚠ '+d.error; return; }
+    out.className='out ok';
+    out.innerHTML='✅ Clave reseteada para <b>'+esc(d.nombre)+'</b> ('+esc(d.email)+').'+
+      '<div class="clave"><code id="cnueva">'+esc(d.claveNueva)+'</code><button id="copiar">Copiar</button></div>'+
+      '<p style="margin-top:8px;font-size:12px;color:#565656">'+esc(d.aviso)+'</p>';
+    document.querySelector('#copiar').onclick=e=>{ navigator.clipboard.writeText(d.claveNueva); e.target.textContent='¡Copiada!'; };
+  }).catch(()=>{ btn.disabled=false; btn.textContent='Generar clave nueva'; out.className='out err'; out.textContent='⚠ Error de conexión.'; });
+};
+function esc(s){ return String(s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+})();
+</script>
+</body>
+</html>

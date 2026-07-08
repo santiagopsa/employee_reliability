@@ -37,18 +37,19 @@ Nota: el Postgres gratuito de Render expira a los ~30 días (te avisan por email
 
 ## Recuperación de clave (procedimiento admin)
 
-No hay envío de correos todavía, así que el reset lo haces tú:
+No hay envío de correos todavía, así que el reset lo haces tú **desde el navegador**:
 
-1. En Render → Environment, define la variable `ADMIN_KEY` con un valor secreto largo (sin ella, el endpoint está deshabilitado).
-2. Cuando una empresa escriba que perdió su clave, ejecuta (PowerShell):
+1. En Render → Environment, define la variable `ADMIN_KEY` con un valor secreto largo (sin ella, el reset está deshabilitado).
+2. Abre `https://employee-reliability.onrender.com/admin`, pon tu ADMIN_KEY y el correo de la empresa → te muestra la clave nueva con botón de copiar. La anterior queda invalidada al instante.
+3. Envíasela a la empresa por un canal directo (verifica antes que quien la pide es dueño del correo registrado).
+
+Alternativa por consola (PowerShell):
 
 ```powershell
-Invoke-RestMethod -Method Post -Uri "https://TU-APP.onrender.com/api/admin/reset-clave" `
+Invoke-RestMethod -Method Post -Uri "https://employee-reliability.onrender.com/api/admin/reset-clave" `
   -Headers @{"x-admin-key"="TU_ADMIN_KEY"} -ContentType "application/json" `
   -Body '{"email":"correo@delaempresa.com"}'
 ```
-
-3. La respuesta trae `claveNueva`: envíasela por un canal directo (verifica antes que quien la pide es dueño del correo). La clave anterior queda invalidada al instante.
 
 En el portal, el login muestra "¿Olvidaste tu clave? Escríbenos" apuntando a hola@peaku.co (cámbialo en portal.html si usas otro correo).
 
