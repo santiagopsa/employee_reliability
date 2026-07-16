@@ -259,6 +259,15 @@ class FileStore {
   async conteos() {
     return { empresas: Object.keys(this.db.empresas).length, aplicaciones: this.db.aplicaciones.length };
   }
+  async listarEmpresas() { return Object.values(this.db.empresas); }
+  async resumenAplicaciones() {
+    const m = {};
+    for (const ap of this.db.aplicaciones) {
+      const x = m[ap.empresaId] = m[ap.empresaId] || { total: 0, ultima: '' };
+      x.total++; if (ap.fecha > x.ultima) x.ultima = ap.fecha;
+    }
+    return m;
+  }
 }
 
 class PgStore {
@@ -298,6 +307,15 @@ class PgStore {
     const e = await this.pool.query('SELECT COUNT(*)::int AS n FROM irrt_empresas');
     const a = await this.pool.query('SELECT COUNT(*)::int AS n FROM irrt_aplicaciones');
     return { empresas: e.rows[0].n, aplicaciones: a.rows[0].n };
+  }
+  async listarEmpresas() {
+    const r = await this.pool.query('SELECT data FROM irrt_empresas');
+    return r.rows.map(x => x.data);
+  }
+  async resumenAplicaciones() {
+    const r = await this.pool.query('SELECT empresa_id, COUNT(*)::int AS total, MAX(fecha) AS ultima FROM irrt_aplicaciones GROUP BY empresa_id');
+    const m = {}; for (const row of r.rows) m[row.empresa_id] = { total: row.total, ultima: row.ultima };
+    return m;
   }
 }
 
@@ -427,6 +445,25 @@ const server = http.createServer(async (req, res) => {
       } catch (e) {
         return json(res, 500, { error: 'La consulta al almacenamiento falló: ' + e.message });
       }
+    }
+
+    /* ---- Admin: listado de empresas con su actividad ---- */
+    if (req.method === 'GET' && p === '/api/admin/empresas') {
+      if (!process.env.ADMIN_KEY) return json(res, 403, { error: 'Define ADMIN_KEY en el servidor.' });
+      if (req.headers['x-admin-key'] !== process.env.ADMIN_KEY) return json(res, 401, { error: 'Clave de administrador incorrecta.' });
+      const emps = await store.listarEmpresas();
+      const resumen = await store.resumenAplicaciones();
+      const lista = emps.map(e => {
+        const r = resumen[e.empresaId] || { total: 0, ultima: null };
+        const limite = e.limite || CONFIG.LIMITE_GRATIS;
+        return {
+          nombre: e.nombre, email: e.email, creada: e.creada, empresaId: e.empresaId,
+          plan: e.limite ? 'Ampliado' : 'Prueba', limite,
+          evaluaciones: r.total, visibles: Math.min(r.total, limite), bloqueadas: Math.max(0, r.total - limite),
+          ultimaEvaluacion: r.ultima || null
+        };
+      }).sort((x, y) => String(y.ultimaEvaluacion || y.creada).localeCompare(String(x.ultimaEvaluacion || x.creada)));
+      return json(res, 200, { ok: true, total: lista.length, empresas: lista });
     }
 
     /* ---- Admin: ampliar el límite de evaluaciones con resultado de una empresa ---- */

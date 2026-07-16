@@ -9,7 +9,7 @@
   :root{--azul:#00C3FF;--azultx:#0092C8;--verde:#1D976C;--gris:#565656;--negro:#2b2b2b;--fondo:#F4F6F8;--coral:#C0392B;}
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Montserrat','Segoe UI',Arial,sans-serif;background:var(--fondo);color:var(--negro);line-height:1.5}
-  .wrap{max-width:520px;margin:0 auto;padding:40px 16px}
+  .wrap{max-width:820px;margin:0 auto;padding:40px 16px}
   .marca{font-weight:800;color:var(--azultx);font-size:15px;margin-bottom:18px}
   .card{background:#fff;border-radius:14px;padding:24px;box-shadow:0 1px 4px rgba(20,40,60,.08)}
   h1{font-size:20px;margin-bottom:6px}
@@ -26,6 +26,14 @@
   .clave button{width:auto;padding:10px 14px;background:var(--verde)}
   .aviso{background:#FFF7DF;border-radius:10px;padding:11px 13px;font-size:12px;color:var(--gris);margin-top:16px}
   a.volver{color:var(--azultx);font-size:12.5px;text-decoration:none;font-weight:700}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:700px){.grid2{grid-template-columns:1fr}}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}
+  th{text-align:left;color:var(--gris);font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:7px 8px;border-bottom:2px solid #e3e8ec}
+  td{padding:8px;border-bottom:1px solid #eef1f3;vertical-align:top}
+  tr.emp:hover{background:#F7FBFD;cursor:pointer}
+  .pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:10.5px;font-weight:800;color:#fff}
+  .p-prueba{background:#8A8F94} .p-ampliado{background:var(--verde)}
 </style>
 </head>
 <body>
@@ -41,6 +49,13 @@
     <button id="btn" disabled>Generar clave nueva</button>
     <div class="out" id="out"></div>
     <div class="aviso"><b>Seguridad:</b> la clave nueva se muestra una sola vez y no queda guardada en esta página. Envíala a la empresa respondiendo al correo registrado (no a quien te escribió, si es distinto). Esta página no funciona si el servidor no tiene ADMIN_KEY configurada.</div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h1>Empresas registradas</h1>
+    <p class="sub">Todas las empresas con su actividad. Haz clic en una fila para autollenar su correo en los formularios de reset y de límite. Usa la clave de administrador de arriba.</p>
+    <button id="btnEmpresas" style="background:var(--verde)">Cargar empresas</button>
+    <div class="out" id="outEmp"></div>
+    <div style="overflow-x:auto" id="tablaEmpBox"></div>
   </div>
   <div class="card" style="margin-top:16px">
     <h1>Estado del sistema</h1>
@@ -96,6 +111,32 @@ btnLim.onclick=()=>{
     ol.innerHTML='✅ <b>'+esc(d.nombre)+'</b> ('+esc(d.email)+')<br>Límite: '+d.limiteAnterior+' → <b>'+d.limiteNuevo+'</b> evaluaciones'+
       '<br>Evaluaciones actuales: '+d.evaluacionesActuales+(d.desbloqueadasAhora>0?' · <b>'+d.desbloqueadasAhora+' desbloqueada'+(d.desbloqueadasAhora>1?'s':'')+' al instante</b> 🔓':'');
   }).catch(()=>{ btnLim.disabled=false; btnLim.textContent='Actualizar límite'; ol.className='out err'; ol.textContent='⚠ Error de conexión.'; });
+};
+document.querySelector('#btnEmpresas').onclick=()=>{
+  const oemp=document.querySelector('#outEmp'), box=document.querySelector('#tablaEmpBox');
+  oemp.className='out'; box.innerHTML='';
+  const k=document.querySelector('#akey').value.trim();
+  if(k.length<4){ oemp.className='out err'; oemp.textContent='⚠ Escribe primero tu clave de administrador en el campo de arriba.'; return; }
+  fetch('/api/admin/empresas',{headers:{'x-admin-key':k}}).then(r=>r.json()).then(d=>{
+    if(d.error){ oemp.className='out err'; oemp.textContent='⚠ '+d.error; return; }
+    if(!d.empresas.length){ oemp.className='out ok'; oemp.textContent='Aún no hay empresas registradas.'; return; }
+    box.innerHTML='<table><thead><tr><th>Empresa</th><th>Correo</th><th>Registrada</th><th>Plan</th><th>Evaluaciones</th><th>Bloqueadas</th><th>Última actividad</th></tr></thead><tbody>'+
+      d.empresas.map(e=>'<tr class="emp" data-email="'+esc(e.email)+'">'+
+        '<td><b>'+esc(e.nombre)+'</b></td>'+
+        '<td>'+esc(e.email)+'</td>'+
+        '<td>'+esc((e.creada||'').slice(0,10))+'</td>'+
+        '<td><span class="pill p-'+(e.plan==='Ampliado'?'ampliado':'prueba')+'">'+e.plan+'</span></td>'+
+        '<td>'+e.visibles+' de '+e.limite+(e.evaluaciones!==e.visibles?' ('+e.evaluaciones+' total)':'')+'</td>'+
+        '<td>'+(e.bloqueadas>0?'🔒 '+e.bloqueadas:'—')+'</td>'+
+        '<td>'+esc(e.ultimaEvaluacion?e.ultimaEvaluacion.slice(0,16).replace('T',' '):'sin evaluaciones')+'</td></tr>').join('')+'</tbody></table>';
+    box.querySelectorAll('tr.emp').forEach(tr=>tr.onclick=()=>{
+      document.querySelector('#email').value=tr.dataset.email;
+      document.querySelector('#emailLim').value=tr.dataset.email;
+      document.querySelector('#email').dispatchEvent(new Event('input'));
+      document.querySelector('#emailLim').dispatchEvent(new Event('input'));
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+  }).catch(()=>{ oemp.className='out err'; oemp.textContent='⚠ Error de conexión.'; });
 };
 document.querySelector('#btnEstado').onclick=()=>{
   const oe=document.querySelector('#outEstado'); oe.className='out';
