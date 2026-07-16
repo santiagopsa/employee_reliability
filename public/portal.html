@@ -220,7 +220,7 @@ function pintarPlan(){
   const lleno = plan.usadas>=plan.limite;
   const el=$('#panPlan');
   el.className='plan'+(lleno?' lleno':'');
-  el.innerHTML = `<span><b>Prueba gratuita:</b> ${plan.usadas} de ${plan.limite} evaluaciones con resultado</span>
+  el.innerHTML = `<span><b>${plan.nombre||'Prueba gratuita'}:</b> ${plan.usadas} de ${plan.limite} evaluaciones con resultado</span>
     <div class="barra"><i style="width:${pct}%"></i></div>
     ${plan.bloqueadas>0?`<span><b>${plan.bloqueadas}</b> bloqueada${plan.bloqueadas>1?'s':''} 🔒</span>`:''}
     ${lleno?`<a href="mailto:${CONTACTO}?subject=Activar plan IRRT" style="color:var(--azultx);font-weight:700;text-decoration:none;white-space:nowrap">Activar plan completo →</a>`:''}`;

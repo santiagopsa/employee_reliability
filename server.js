@@ -341,14 +341,15 @@ function servirArchivo(res, nombre, tipo) {
 }
 
 /* Aplica el límite freemium: las primeras N (cronológicas) muestran resultado; el resto queda bloqueado. */
-function aplicarLimite(apps) {
+function aplicarLimite(apps, limite) {
+  limite = limite || CONFIG.LIMITE_GRATIS;
   const orden = [...apps].sort((x, y) => x.fecha.localeCompare(y.fecha));
-  const visibles = new Set(orden.slice(0, CONFIG.LIMITE_GRATIS).map(a => a.id));
+  const visibles = new Set(orden.slice(0, limite).map(a => a.id));
   const lista = apps.map(a => visibles.has(a.id)
     ? { id: a.id, fecha: a.fecha, candidato: a.candidato, resultado: a.resultado, bloqueado: false }
     : { id: a.id, fecha: a.fecha, candidato: a.candidato, bloqueado: true }
   ).sort((x, y) => y.fecha.localeCompare(x.fecha));
-  return { lista, usadas: Math.min(apps.length, CONFIG.LIMITE_GRATIS), bloqueadas: Math.max(0, apps.length - CONFIG.LIMITE_GRATIS) };
+  return { lista, usadas: Math.min(apps.length, limite), bloqueadas: Math.max(0, apps.length - limite) };
 }
 
 const server = http.createServer(async (req, res) => {
@@ -404,10 +405,11 @@ const server = http.createServer(async (req, res) => {
       const emp = await autenticar(req);
       if (!emp) return json(res, 401, { error: 'No autorizado.' });
       const apps = await store.aplicacionesDeEmpresa(emp.empresaId);
-      const { lista, usadas, bloqueadas } = aplicarLimite(apps);
+      const limite = emp.limite || CONFIG.LIMITE_GRATIS;
+      const { lista, usadas, bloqueadas } = aplicarLimite(apps, limite);
       return json(res, 200, {
         empresa: emp.nombre, total: apps.length, resultados: lista,
-        plan: { tipo: 'prueba', limite: CONFIG.LIMITE_GRATIS, usadas, bloqueadas }
+        plan: { tipo: emp.limite ? 'ampliado' : 'prueba', nombre: emp.limite ? 'Plan ampliado' : 'Prueba gratuita', limite, usadas, bloqueadas }
       });
     }
 
@@ -425,6 +427,24 @@ const server = http.createServer(async (req, res) => {
       } catch (e) {
         return json(res, 500, { error: 'La consulta al almacenamiento falló: ' + e.message });
       }
+    }
+
+    /* ---- Admin: ampliar el límite de evaluaciones con resultado de una empresa ---- */
+    if (req.method === 'POST' && p === '/api/admin/limite') {
+      if (!process.env.ADMIN_KEY) return json(res, 403, { error: 'Define ADMIN_KEY en el servidor.' });
+      if (req.headers['x-admin-key'] !== process.env.ADMIN_KEY) return json(res, 401, { error: 'Clave de administrador incorrecta.' });
+      const b = await leerBody(req);
+      const emp = await store.empresaPorEmail(String(b.email || '').trim().toLowerCase());
+      if (!emp) return json(res, 404, { error: 'No existe una empresa con ese correo.' });
+      const limite = parseInt(b.limite, 10);
+      if (!Number.isInteger(limite) || limite < 1 || limite > 100000) return json(res, 400, { error: 'El límite debe ser un número entero entre 1 y 100000.' });
+      const anterior = emp.limite || CONFIG.LIMITE_GRATIS;
+      emp.limite = limite;
+      emp.limiteActualizado = new Date().toISOString();
+      await store.actualizarEmpresa(emp);
+      const apps = await store.aplicacionesDeEmpresa(emp.empresaId);
+      const desbloqueadas = Math.max(0, Math.min(apps.length, limite) - Math.min(apps.length, anterior));
+      return json(res, 200, { ok: true, email: emp.email, nombre: emp.nombre, limiteAnterior: anterior, limiteNuevo: limite, evaluacionesActuales: apps.length, desbloqueadasAhora: desbloqueadas });
     }
 
     /* ---- Admin: resetear clave de una empresa (requiere ADMIN_KEY en variables de entorno) ----
